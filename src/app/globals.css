@@ -1,26 +1,175 @@
 @import "tailwindcss";
 
+/* ------------------------------------------------------------------
+   ASAP 2.0 design tokens. Semantic tokens are shared by both themes;
+   only the values change. See docs/DESIGN_SYSTEM.md.
+   ------------------------------------------------------------------ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* brand palette (reference values from the brief) */
+  --indigo: #252044;
+  --lavender: #c8b5ed;
+  --green: #4f805b;
+  --sage: #dce8d9;
+  --ivory: #faf7f2;
+  --peach: #f2c6ad;
+
+  /* semantic (light) */
+  --bg: #faf7f2;
+  --surface: #ffffff;
+  --surface-sunk: #f3efe8;
+  --ink: #252044;
+  --muted: #6b6780; /* #77738A darkened slightly to pass 4.5:1 on ivory */
+  --line: #e6e0d6;
+  --brand: #252044;
+  --brand-ink: #ffffff;
+  --action: #3f6f4b; /* #4F805B darkened for 4.5:1 with white text */
+  --action-hover: #355f40;
+  --action-ink: #ffffff;
+  --action-soft: #dce8d9;
+  --ai: #c8b5ed;
+  --ai-soft: #efe9fa;
+  --ai-ink: #3d2f6b;
+  --warm: #f2c6ad;
+  --warm-soft: #fbece3;
+  --focus-ring: #6a4fc1;
+  --shadow-1: 0 1px 2px rgb(37 32 68 / 0.06), 0 1px 1px rgb(37 32 68 / 0.04);
+  --shadow-2: 0 8px 24px -8px rgb(37 32 68 / 0.18);
+  --shadow-3: 0 24px 60px -16px rgb(37 32 68 / 0.28);
+
+  --radius-sm: 8px;
+  --radius-input: 10px;
+  --radius-card: 16px;
+  --radius-feature: 24px;
+
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --dur-micro: 160ms;
+  --dur-drawer: 260ms;
+  --dur-page: 300ms;
+}
+
+[data-theme="dark"] {
+  --bg: #15122a;
+  --surface: #201c3a;
+  --surface-sunk: #1a1632;
+  --ink: #f1eef8;
+  --muted: #aaa6bf;
+  --line: #34305a;
+  --brand: #c8b5ed;
+  --brand-ink: #1c1736;
+  --action: #6fa77c;
+  --action-hover: #82b78e;
+  --action-ink: #0f1a12;
+  --action-soft: #22352a;
+  --ai: #c8b5ed;
+  --ai-soft: #2c2650;
+  --ai-ink: #e2d7f7;
+  --warm: #f2c6ad;
+  --warm-soft: #3a2c34;
+  --focus-ring: #c8b5ed;
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-2: 0 8px 24px -8px rgb(0 0 0 / 0.5);
+  --shadow-3: 0 24px 60px -16px rgb(0 0 0 / 0.6);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-sunk: var(--surface-sunk);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-brand-ink: var(--brand-ink);
+  --color-action: var(--action);
+  --color-action-ink: var(--action-ink);
+  --color-action-soft: var(--action-soft);
+  --color-ai: var(--ai);
+  --color-ai-soft: var(--ai-soft);
+  --color-ai-ink: var(--ai-ink);
+  --color-warm: var(--warm);
+  --color-warm-soft: var(--warm-soft);
+  --font-sans: var(--font-manrope), system-ui, sans-serif;
+  --font-serif: var(--font-serif), Georgia, serif;
+  --font-mono: var(--font-mono), ui-monospace, monospace;
+  --radius-sm: 8px;
+  --radius-input: 10px;
+  --radius-card: 16px;
+  --radius-feature: 24px;
+  --shadow-1: var(--shadow-1);
+  --shadow-2: var(--shadow-2);
+  --shadow-3: var(--shadow-3);
+  --spacing: 4px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--bg);
+  color: var(--ink);
 }
-
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-manrope), system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.display {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+.eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.tnum {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* motion */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes slide-in {
+  from { transform: translateX(24px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@keyframes fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.page-enter { animation: rise var(--dur-page) var(--ease) both; }
+.drawer-enter { animation: slide-in var(--dur-drawer) var(--ease) both; }
+.fade-enter { animation: fade var(--dur-micro) var(--ease) both; }
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-sunk) 25%, var(--line) 50%, var(--surface-sunk) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+  border-radius: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

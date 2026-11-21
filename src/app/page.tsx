@@ -1,69 +1,94 @@
-import Image from "next/image";
+"use client";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useApp } from "@/lib/store";
+import { pickToday } from "@/lib/planner";
+import { Button, EmptyState, Motif } from "@/components/ui";
+import { Icon } from "@/components/ui/Icon";
+import { QuickCapture } from "@/components/tasks/QuickCapture";
+import { TaskRow, useCompleteTask } from "@/components/tasks/TaskRow";
+import { useAsk } from "@/hooks/useAsk";
+
+function greeting(name: string) {
+  const h = new Date().getHours();
+  const g = h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
+  return name ? `${g}, ${name}.` : `${g}.`;
+}
 
 export default function Home() {
+  const { state, dispatch, openDump } = useApp();
+  const router = useRouter();
+  const ask = useAsk();
+  const complete = useCompleteTask();
+  const [showAll, setShowAll] = useState(false);
+
+  const open = state.tasks.filter((t) => !t.done);
+  const planned = open.filter((t) => t.today).slice(0, 3);
+  const priorities = planned.length ? planned : pickToday(state.tasks, 3);
+  const rest = open.filter((t) => !priorities.includes(t));
+  const next = priorities[0];
+  const minutes = priorities.reduce((a, t) => a + t.minutes, 0);
+  const doneToday = state.tasks.filter((t) => t.done && t.doneAt && new Date(t.doneAt).toDateString() === new Date().toDateString()).length;
+
+  const startFocus = () => { if (!next) return; dispatch({ type: "active", id: next.id }); router.push("/focus"); };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div className="flex flex-col gap-10">
+      <header>
+        <p className="eyebrow">{new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}</p>
+        <h1 className="display mt-2 text-5xl sm:text-6xl">{greeting(state.settings.name)}</h1>
+        <p className="mt-3 text-lg text-muted">
+          {next ? "Let's take today one step at a time." : doneToday ? "Everything planned is done. Nice and steady." : "A clear day. Add what's on your mind when you're ready."}
+        </p>
+      </header>
+
+      {next ? (
+        <section aria-labelledby="next-h" className="relative overflow-hidden rounded-[24px] bg-[#252044] p-6 pb-24 text-[#f1eef8] shadow-[var(--shadow-2)] sm:p-9 sm:pb-9">
+          <Motif tone="deep" className="pointer-events-none absolute inset-x-0 bottom-0 h-28 w-full opacity-80" />
+          <p id="next-h" className="eyebrow !text-[#c8b5ed]">Your next step</p>
+          <h2 className="display mt-3 max-w-xl text-4xl sm:text-5xl">{next.title}</h2>
+          <p className="mt-3 text-[#d9d3ee]">Approximately <span className="tnum">{next.minutes}</span> minutes · {next.project}</p>
+          <div className="relative mt-7 flex flex-wrap gap-3">
+            <Button variant="primary" size="lg" onClick={startFocus} className="!bg-[#6fa77c] !text-[#0f1a12]"><Icon name="play" size={18} />Start Focus</Button>
+            <Button size="lg" variant="ghost" className="!text-[#f1eef8] hover:!bg-white/10" onClick={() => complete(next)}><Icon name="check" size={18} />Mark done</Button>
+          </div>
+        </section>
+      ) : (
+        <EmptyState title={doneToday ? "All clear" : "Nothing planned yet"} body="Pour out whatever's on your mind. ASAP will sort it and you'll review before anything is saved."
+          action={<div className="flex flex-wrap justify-center gap-2"><Button variant="primary" onClick={() => openDump()}>Open Brain Dump</Button><Button onClick={() => ask.sendAndShow("review my day")}>Plan my day</Button></div>} />
+      )}
+
+      {priorities.length > 0 && (
+        <section aria-labelledby="pri-h">
+          <div className="mb-2 flex items-baseline justify-between">
+            <h2 id="pri-h" className="eyebrow">Today&apos;s priorities</h2>
+            <span className="tnum text-sm text-muted">{minutes} min total</span>
+          </div>
+          <ul className="flex flex-col divide-y divide-line rounded-[16px] border border-line bg-surface p-1">
+            {priorities.map((t, i) => <TaskRow key={t.id} task={t} index={i} />)}
+          </ul>
+          {minutes > 90 && (
+            <div className="mt-3 flex flex-wrap items-center gap-3 rounded-[14px] bg-ai-soft px-4 py-3 text-[15px]">
+              <Icon name="spark" size={18} className="text-ai-ink" />
+              <span className="flex-1">That adds up to about {Math.round(minutes / 6) / 10} hours. Want a lighter day?</span>
+              <Button size="sm" variant="ai" onClick={() => ask.sendAndShow("review my day")}>Review my day</Button>
+            </div>
+          )}
+        </section>
+      )}
+
+      <section aria-label="Capture" className="flex flex-col gap-3">
+        <QuickCapture />
+        {rest.length > 0 && (
+          <div>
+            <button onClick={() => setShowAll((s) => !s)} aria-expanded={showAll} className="inline-flex min-h-11 items-center gap-1 text-[15px] font-semibold text-muted hover:text-ink">
+              <Icon name="chevron" size={16} className={showAll ? "rotate-90 transition-transform" : "transition-transform"} />
+              {showAll ? "Hide" : `Show ${rest.length} more`} {showAll ? "other tasks" : rest.length === 1 ? "task" : "tasks"}
+            </button>
+            {showAll && <ul className="fade-enter mt-1 flex flex-col divide-y divide-line rounded-[16px] border border-line bg-surface p-1">{rest.map((t) => <TaskRow key={t.id} task={t} />)}</ul>}
+          </div>
+        )}
+      </section>
     </div>
   );
 }
