@@ -12,7 +12,7 @@ export default function Settings() {
       <header><p className="eyebrow">Make it yours</p><h1 className="display mt-2 text-5xl">Settings</h1></header>
 
       <Card className="p-6">
-        <h2 className="text-lg ">Name</h2>
+        <h2 className="text-lg font-bold">Name</h2>
         <p className="text-muted">Used in your greeting. Stored only on this device.</p>
         <label htmlFor="name" className="sr-only">Your name</label>
         <input id="name" value={s.name} onChange={(e) => dispatch({ type: "settings", patch: { name: e.target.value } })} placeholder="Optional"
@@ -20,17 +20,17 @@ export default function Settings() {
       </Card>
 
       <Card className="p-6">
-        <h2 className="text-lg ">Theme</h2>
+        <h2 className="text-lg font-bold">Theme</h2>
         <div role="radiogroup" aria-label="Theme" className="mt-3 flex gap-2">
           {(["light", "dark"] as const).map((t) => (
             <button key={t} role="radio" aria-checked={s.theme === t} onClick={() => dispatch({ type: "settings", patch: { theme: t } })}
-              className={cx("min-h-11 rounded-[10px] border px-5 capitalize", s.theme === t ? "border-action bg-action-soft" : "border-line hover:bg-sunk")}>{t}</button>
+              className={cx("min-h-11 rounded-[10px] border px-5 font-semibold capitalize", s.theme === t ? "border-action bg-action-soft" : "border-line hover:bg-sunk")}>{t}</button>
           ))}
         </div>
       </Card>
 
       <Card className="p-6">
-        <h2 className="text-lg ">Data</h2>
+        <h2 className="text-lg font-bold">Data</h2>
         <p className="text-muted">Everything lives in this browser. {state.sample ? "You're seeing sample tasks." : ""}</p>
         <div className="mt-3 flex flex-wrap gap-2">
           <Button onClick={() => setConfirm(true)}>{state.sample ? "Clear sample data" : "Delete all tasks"}</Button>

@@ -36,7 +36,7 @@ export default function Work() {
         <div role="tablist" aria-label="Views" className="flex rounded-[12px] bg-sunk p-1">
           {TABS.map((t) => (
             <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)}
-              className={cx("min-h-10 rounded-[9px] px-4 text-[15px] transition-colors", tab === t ? "bg-surface shadow-[var(--shadow-1)]" : "text-muted hover:text-ink")}>
+              className={cx("min-h-10 rounded-[9px] px-4 text-[15px] font-semibold transition-colors", tab === t ? "bg-surface shadow-[var(--shadow-1)]" : "text-muted hover:text-ink")}>
               {t}
             </button>
           ))}

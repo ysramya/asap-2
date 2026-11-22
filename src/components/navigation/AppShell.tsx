@@ -42,7 +42,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <nav aria-label="Primary" className="flex flex-col gap-1 px-3 lg:px-4">
           {NAV.map((n) => (
             <Link key={n.href} href={n.href} aria-current={isActive(n.href) ? "page" : undefined} title={n.label}
-              className={cx("flex h-11 items-center gap-3 rounded-[10px] px-3 text-[15px] transition-colors duration-[160ms]",
+              className={cx("flex h-11 items-center gap-3 rounded-[10px] px-3 text-[15px] font-semibold transition-colors duration-[160ms]",
                 isActive(n.href) ? "bg-[#dce8d9] text-[#252044]" : "text-[#e6e2d8] hover:bg-white/10")}>
               <Icon name={n.icon} /><span className="hidden lg:inline">{n.label}</span>
             </Link>
@@ -50,7 +50,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
         <div className="mt-auto flex flex-col gap-1 px-3 pb-5 lg:px-4">
           <Link href="/settings" aria-current={settingsPage ? "page" : undefined} title="Settings"
-            className={cx("flex h-11 items-center gap-3 rounded-[10px] px-3 text-[15px] hover:bg-white/10", settingsPage && "bg-white/15")}>
+            className={cx("flex h-11 items-center gap-3 rounded-[10px] px-3 text-[15px] font-semibold hover:bg-white/10", settingsPage && "bg-white/15")}>
             <Icon name="settings" /><span className="hidden lg:inline">Settings</span>
           </Link>
           <button onClick={() => dispatch({ type: "settings", patch: { theme: state.settings.theme === "dark" ? "light" : "dark" } })}
@@ -59,7 +59,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Icon name={state.settings.theme === "dark" ? "sun" : "moon"} /><span className="hidden lg:inline">{state.settings.theme === "dark" ? "Light mode" : "Dark mode"}</span>
           </button>
           <div className="hidden items-center gap-3 px-3 py-2 lg:flex">
-            <span className="grid size-8 place-items-center rounded-full bg-[#4f805b] text-sm " aria-hidden>{(state.settings.name || "Me").slice(0, 1).toUpperCase()}</span>
+            <span className="grid size-8 place-items-center rounded-full bg-[#4f805b] text-sm font-bold" aria-hidden>{(state.settings.name || "Me").slice(0, 1).toUpperCase()}</span>
             <span className="truncate text-sm text-[#e6e2d8]">{state.settings.name || "Your profile"}</span>
           </div>
         </div>
@@ -102,7 +102,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <nav aria-label="Primary" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden">
         {NAV.map((n) => (
           <Link key={n.href} href={n.href} aria-current={isActive(n.href) ? "page" : undefined}
-            className={cx("flex h-16 flex-col items-center justify-center gap-0.5 text-xs ", isActive(n.href) ? "text-action" : "text-muted")}>
+            className={cx("flex h-16 flex-col items-center justify-center gap-0.5 text-xs font-bold", isActive(n.href) ? "text-action" : "text-muted")}>
             <Icon name={n.icon} /><span>{n.label}</span>
           </Link>
         ))}

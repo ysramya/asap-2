@@ -81,7 +81,7 @@ export default function Home() {
         <QuickCapture />
         {rest.length > 0 && (
           <div>
-            <button onClick={() => setShowAll((s) => !s)} aria-expanded={showAll} className="inline-flex min-h-11 items-center gap-1 text-[15px] text-muted hover:text-ink">
+            <button onClick={() => setShowAll((s) => !s)} aria-expanded={showAll} className="inline-flex min-h-11 items-center gap-1 text-[15px] font-semibold text-muted hover:text-ink">
               <Icon name="chevron" size={16} className={showAll ? "rotate-90 transition-transform" : "transition-transform"} />
               {showAll ? "Hide" : `Show ${rest.length} more`} {showAll ? "other tasks" : rest.length === 1 ? "task" : "tasks"}
             </button>

@@ -25,7 +25,7 @@ export function AskPanel({ onClose }: { onClose: () => void }) {
         {ask.messages.length === 0 ? (
           <div className="mt-4 flex flex-col items-start gap-2">
             {suggestions.slice(0, 3).map((s) => (
-              <button key={s} onClick={() => ask.send(s)} className="rounded-full border border-ai bg-surface px-4 py-2 text-left text-sm transition-colors hover:bg-ai-soft">{s}</button>
+              <button key={s} onClick={() => ask.send(s)} className="rounded-full border border-ai bg-surface px-4 py-2 text-left text-sm font-semibold transition-colors hover:bg-ai-soft">{s}</button>
             ))}
           </div>
         ) : <div className="mt-4"><ThreadBody ask={ask} /></div>}

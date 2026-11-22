@@ -52,7 +52,7 @@ Manrope (UI), Instrument Serif (`.display`: greeting, page titles, next step), J
 
 ## Visual identity ("Modern Editorial Minimalism")
 
-- **Type:** serif only. Instrument Serif everywhere (single weight plus italic); hierarchy comes from size, letter spacing, italic and spacing, not weight. Base 17px, with `text-xs/sm/base` enlarged slightly so small text stays readable. `font-synthesis: none` prevents fake bold.
+- **Type:** sans-serif. Manrope everywhere (modern sans); hierarchy from weight, size and letter spacing.
 - **Palette:** deep indigo `#252044` (navigation, contrast), botanical green (actions; `#3F6F4B` is `#4F805B` darkened for AA with white text), forest `#344F3B`, sage `#DCE8D9`, ivory `#FAF7F2`, stone `#EAE6DF` borders, peach sparingly. No purple surfaces or gradients. Muted text `#6B675F` (`#77736D` darkened for AA).
 - **AI Coach:** sage-tinted surfaces and green outlines, no avatar or orb.
 - **Dark:** indigo-charcoal `#15141C` canvas, `#1E1D27` surfaces, warm ivory text, muted green actions; sidebar `#1B1A26`.

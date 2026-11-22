@@ -92,13 +92,8 @@
   --color-ai-ink: var(--ai-ink);
   --color-warm: var(--warm);
   --color-warm-soft: var(--warm-soft);
-  --font-sans: var(--font-serif), Georgia, "Times New Roman", serif;
-  --font-serif: var(--font-serif), Georgia, serif;
-  --font-mono: var(--font-serif), Georgia, "Times New Roman", serif;
-  --text-xs: 0.8125rem;
-  --text-sm: 0.9375rem;
-  --text-base: 1.0625rem;
-  --text-lg: 1.25rem;
+  --font-sans: var(--font-manrope), system-ui, "Segoe UI", sans-serif;
+  --font-mono: var(--font-manrope), system-ui, sans-serif;
   --radius-sm: 8px;
   --radius-input: 10px;
   --radius-card: 14px;
@@ -116,11 +111,9 @@ html {
 body {
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--font-serif), Georgia, "Times New Roman", serif;
-  font-size: 17px;
+  font-family: var(--font-manrope), system-ui, "Segoe UI", sans-serif;
+  font-size: 16px;
   line-height: 1.5;
-  letter-spacing: 0.005em;
-  font-synthesis: none;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -131,20 +124,20 @@ body {
 }
 
 .display {
-  font-family: var(--font-serif), Georgia, serif;
-  font-weight: 400;
-  letter-spacing: -0.015em;
+  font-family: var(--font-manrope), system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.03em;
   line-height: 1.08;
 }
 .eyebrow {
-  font-size: 13px;
-  letter-spacing: 0.14em;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted);
 }
 .tnum {
-  font-family: var(--font-serif), Georgia, serif;
-  font-variant-numeric: lining-nums tabular-nums;
+  font-variant-numeric: tabular-nums;
 }
 
 /* motion */
@@ -182,3 +175,7 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/* weights lost in the serif pass: sensible defaults for controls and headings */
+button, [role="tab"], [role="radio"] { font-weight: 600; }
+h2, h3 { font-weight: 700; }
