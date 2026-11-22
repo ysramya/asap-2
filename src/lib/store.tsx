@@ -1,6 +1,6 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from "react";
-import type { ChatMessage, Settings, Step, Task } from "@/types";
+import type { ChatMessage, Garden, Settings, Step, Task } from "@/types";
 import { newId } from "./planner";
 
 type State = {
@@ -10,7 +10,23 @@ type State = {
   chat: ChatMessage[];
   activeTaskId: string | null;
   sample: boolean;
+  garden: Garden;
 };
+
+const emptyGarden = (): Garden => ({ plants: {}, order: [], trees: [], ferns: 0, lastSeen: Date.now() });
+const DAY = 86400000;
+
+/** Growth is additive. Nothing here ever removes or downgrades anything. */
+function grow(g: Garden, id: string, stage: 1 | 2 | 3): Garden {
+  const cur = g.plants[id] ?? 0;
+  if (cur >= stage) return g; // duplicate events earn nothing
+  return { ...g, plants: { ...g.plants, [id]: stage }, order: cur ? g.order : [...g.order, id], lastSeen: Date.now() };
+}
+function growTrees(g: Garden, tasks: Task[], project: string): Garden {
+  const ts = tasks.filter((t) => t.project === project);
+  if (ts.length < 3 || ts.some((t) => !t.done) || g.trees.includes(project)) return g;
+  return { ...g, trees: [...g.trees, project] };
+}
 
 const today = () => new Date().toISOString().slice(0, 10);
 const mk = (title: string, project: string, minutes: number, extra: Partial<Task> = {}): Task => ({
@@ -32,6 +48,7 @@ const initial: State = {
   chat: [],
   activeTaskId: null,
   sample: false,
+  garden: emptyGarden(),
 };
 
 type Action =
@@ -50,8 +67,28 @@ type Action =
   | { type: "clearSample" };
 
 function reducer(s: State, a: Action): State {
+  const n = base(s, a);
+  let g = n.garden;
+  if (a.type === "active" && a.id) { const t = n.tasks.find((x) => x.id === a.id); if (t && !t.done) g = grow(g, t.id, 1); }
+  if (a.type === "toggleStep") { const t = n.tasks.find((x) => x.id === a.id); if (t?.steps.find((x) => x.id === a.stepId)?.done) g = grow(g, a.id, 2); }
+  if (a.type === "toggle") {
+    const was = s.tasks.find((x) => x.id === a.id), t = n.tasks.find((x) => x.id === a.id);
+    if (t?.done && !was?.done) g = growTrees(grow(g, t.id, 3), n.tasks, t.project);
+  }
+  return g === n.garden ? n : { ...n, garden: g };
+}
+
+function base(s: State, a: Action): State {
   switch (a.type) {
-    case "hydrate": return { ...s, ...a.state, hydrated: true };
+    case "hydrate": {
+      const m = { ...s, ...a.state, hydrated: true };
+      let g = a.state.garden;
+      if (!g) { // first run with the garden: seed it from work already done
+        g = emptyGarden();
+        for (const t of m.tasks) { if (t.done) g = grow(g, t.id, 3); else if (t.steps.some((x) => x.done)) g = grow(g, t.id, 2); }
+      } else if (Date.now() - g.lastSeen > 3 * DAY) g = { ...g, ferns: g.ferns + 1 }; // gentle new growth on return
+      return { ...m, garden: { ...g, lastSeen: Date.now() } };
+    }
     case "addTasks": return { ...s, tasks: [...a.tasks, ...s.tasks] };
     case "update": return { ...s, tasks: s.tasks.map((t) => (t.id === a.id ? { ...t, ...a.patch } : t)) };
     case "remove": return { ...s, tasks: s.tasks.filter((t) => t.id !== a.id), activeTaskId: s.activeTaskId === a.id ? null : s.activeTaskId };
@@ -67,7 +104,7 @@ function reducer(s: State, a: Action): State {
     case "chat": return { ...s, chat: [...s.chat, ...a.messages] };
     case "patchMessage": return { ...s, chat: s.chat.map((m) => (m.id === a.id ? { ...m, ...a.patch } : m)) };
     case "active": return { ...s, activeTaskId: a.id };
-    case "clearSample": return { ...s, tasks: [], chat: [], sample: false, activeTaskId: null };
+    case "clearSample": return { ...s, tasks: [], chat: [], sample: false, activeTaskId: null }; // the garden is never cleared
   }
 }
 
@@ -103,7 +140,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!state.hydrated) return;
     document.documentElement.dataset.theme = state.settings.theme;
-    try { localStorage.setItem(KEY, JSON.stringify({ tasks: state.tasks, settings: state.settings, chat: state.chat, sample: state.sample, activeTaskId: state.activeTaskId })); } catch {}
+    try { localStorage.setItem(KEY, JSON.stringify({ tasks: state.tasks, settings: state.settings, chat: state.chat, sample: state.sample, garden: state.garden, activeTaskId: state.activeTaskId })); } catch {}
   }, [state]);
 
   const dismissToast = useCallback((id: string) => setToasts((t) => t.filter((x) => x.id !== id)), []);

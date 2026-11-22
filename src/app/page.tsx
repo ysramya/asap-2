@@ -7,6 +7,7 @@ import { formatMinutes, pickToday } from "@/lib/planner";
 import { Button, Mark } from "@/components/ui";
 import { Icon } from "@/components/ui/Icon";
 import { TaskComposer } from "@/components/tasks/TaskComposer";
+import { GardenArt, gardenCaption } from "@/components/garden/Garden";
 import { TaskRow } from "@/components/tasks/TaskRow";
 
 const LIMIT = 4;
@@ -102,6 +103,13 @@ export default function Home() {
           </Link>
         ))}
       </section>
+      {state.settings.garden !== false && (
+        <Link href="/garden" aria-label="Open your garden" className="group flex items-center gap-4 overflow-hidden rounded-[16px] border border-line bg-surface pr-4 transition-colors hover:bg-sunk">
+          <span className="block h-24 w-44 shrink-0 sm:w-64"><GardenArt garden={state.garden} /></span>
+          <span className="min-w-0 flex-1"><span className="eyebrow">Your garden</span><span className="mt-1 block text-[15px]">{gardenCaption(state.garden)}</span></span>
+          <Icon name="arrow" size={16} className="text-muted" />
+        </Link>
+      )}
       <p className="text-center text-sm text-muted">Create → Organize → Plan → Focus → Complete. The AI Coach is on the side whenever you want a hand.</p>
     </div>
   );

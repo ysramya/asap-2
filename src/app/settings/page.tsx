@@ -30,6 +30,15 @@ export default function Settings() {
       </Card>
 
       <Card className="p-6">
+        <h2 className="text-lg font-bold">Garden</h2>
+        <p className="text-muted">A calm picture of your progress. Hiding it keeps everything you have grown.</p>
+        <button role="switch" aria-checked={s.garden !== false} onClick={() => dispatch({ type: "settings", patch: { garden: s.garden === false } })}
+          className={cx("mt-3 min-h-11 rounded-[10px] border px-5 font-semibold", s.garden !== false ? "border-action bg-action-soft" : "border-line hover:bg-sunk")}>
+          {s.garden !== false ? "Garden is shown" : "Garden is hidden"}
+        </button>
+      </Card>
+
+      <Card className="p-6">
         <h2 className="text-lg font-bold">Data</h2>
         <p className="text-muted">Everything lives in this browser. {state.sample ? "You're seeing sample tasks." : ""}</p>
         <div className="mt-3 flex flex-wrap gap-2">

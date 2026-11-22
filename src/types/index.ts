@@ -34,5 +34,8 @@ export type Settings = {
   name: string;
   guidance: Guidance;
   askOpen: boolean;
+  garden?: boolean; // optional garden; undefined means on
 };
+/** Cumulative and permanent. Stages only ever move forward. 1 seed, 2 seedling, 3 bloom. */
+export type Garden = { plants: Record<string, 1 | 2 | 3>; order: string[]; trees: string[]; ferns: number; lastSeen: number };
 export type DumpItem = { id: string; title: string; project: string; keep: boolean; due?: string };

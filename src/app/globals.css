@@ -179,3 +179,8 @@ body {
 /* weights lost in the serif pass: sensible defaults for controls and headings */
 button, [role="tab"], [role="radio"] { font-weight: 600; }
 h2, h3 { font-weight: 700; }
+
+/* Garden: slow, gentle sway. Disabled for reduced motion. */
+.garden-svg .sway { transform-box: fill-box; transform-origin: 50% 100%; animation: sway 7s ease-in-out infinite; }
+@keyframes sway { 0%, 100% { transform: rotate(-1.4deg); } 50% { transform: rotate(1.4deg); } }
+@media (prefers-reduced-motion: reduce) { .garden-svg .sway { animation: none; } }
