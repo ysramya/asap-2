@@ -63,14 +63,14 @@ function DumpInner() {
               <li key={i.id} className={cx("rounded-[14px] border border-line p-3", !i.keep && "opacity-50")}>
                 <div className="flex items-center gap-2">
                   <input type="checkbox" checked={i.keep} onChange={() => patch(i.id, { keep: !i.keep })} aria-label={`Keep “${i.title}”`} className="size-5 accent-[var(--action)]" />
-                  <input value={i.title} onChange={(e) => patch(i.id, { title: e.target.value })} aria-label="Task title" className="h-11 flex-1 rounded-[8px] bg-transparent px-2 font-semibold" />
+                  <input value={i.title} onChange={(e) => patch(i.id, { title: e.target.value })} aria-label="Task title" className="h-11 flex-1 rounded-[8px] bg-transparent px-2 " />
                 </div>
                 <div className="mt-1 flex flex-wrap items-center gap-2 pl-7">
                   <label className="text-sm text-muted">Project
                     <input value={i.project} onChange={(e) => patch(i.id, { project: e.target.value })} className="ml-2 h-9 w-32 rounded-[8px] border border-line bg-bg px-2 text-ink" />
                   </label>
                   {i.due ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-action-soft px-2.5 py-1 text-sm font-semibold">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-action-soft px-2.5 py-1 text-sm ">
                       Due {i.due}<button className="ml-1 underline" onClick={() => patch(i.id, { due: undefined })} aria-label="Remove due date">remove</button>
                     </span>
                   ) : <span className="text-sm text-muted">No due date</span>}

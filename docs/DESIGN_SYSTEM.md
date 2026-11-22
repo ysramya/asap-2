@@ -50,9 +50,11 @@ Manrope (UI), Instrument Serif (`.display`: greeting, page titles, next step), J
 - Guidance level (Settings): Suggest = no apply button, Assist = approve each change, Execute = behaves like Assist until an integration exists.
 - Due dates are only set when the user names a day.
 
-## Visual identity ("Editorial Intelligence")
+## Visual identity ("Modern Editorial Minimalism")
 
-- **Type:** Instrument Serif for identity moments (greetings, page and feature headings, Focus task title); Manrope for everything interactive; IBM Plex Mono (`.tnum`) for timers, durations and numeric metadata.
-- **Colour roles:** indigo = identity/structure, green = action and progress, lavender = AI, sage = calm support, peach = occasional warmth.
-- **Surfaces:** canvas `#FAF7F2`, card `#FFFFFF`, secondary `#F3F0F8` (`--surface-sunk`), green surface `#EDF3EA` (`--action-soft`), lavender surface `#F1ECF8` (`--ai-soft`), border `#E9E4E9` (`--line`). Dark theme is a separate indigo-charcoal palette, not an inversion.
-- **Mark:** a leaf with a pathway line (`Mark` in `components/ui`), used in the sidebar, the AI companion avatar and the favicon (`src/app/icon.svg`).
+- **Type:** serif only. Instrument Serif everywhere (single weight plus italic); hierarchy comes from size, letter spacing, italic and spacing, not weight. Base 17px, with `text-xs/sm/base` enlarged slightly so small text stays readable. `font-synthesis: none` prevents fake bold.
+- **Palette:** deep indigo `#252044` (navigation, contrast), botanical green (actions; `#3F6F4B` is `#4F805B` darkened for AA with white text), forest `#344F3B`, sage `#DCE8D9`, ivory `#FAF7F2`, stone `#EAE6DF` borders, peach sparingly. No purple surfaces or gradients. Muted text `#6B675F` (`#77736D` darkened for AA).
+- **AI Coach:** sage-tinted surfaces and green outlines, no avatar or orb.
+- **Dark:** indigo-charcoal `#15141C` canvas, `#1E1D27` surfaces, warm ivory text, muted green actions; sidebar `#1B1A26`.
+- **Navigation:** Home, My Tasks, Focus. The AI Coach is a collapsible side panel (drawer on small screens). Theme toggle sits in the sidebar above the profile.
+- **Mark:** leaf with a pathway line (`Mark`), used in the sidebar and favicon.

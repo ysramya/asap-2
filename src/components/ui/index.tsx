@@ -20,7 +20,7 @@ export function Button({ variant = "secondary", size = "md", loading, className,
   const s = { sm: "h-9 px-3 text-sm", md: "h-11 px-4 text-[15px]", lg: "h-14 px-7 text-base" }[size];
   return (
     <button {...p} disabled={disabled || loading} aria-busy={loading || undefined}
-      className={cx("inline-flex min-w-11 items-center justify-center gap-2 rounded-[10px] font-semibold transition-[background,transform,filter,opacity] duration-[160ms] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50", v, s, className)}>
+      className={cx("inline-flex min-w-11 items-center justify-center gap-2 rounded-[10px] transition-[background,transform,filter,opacity] duration-[160ms] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50", v, s, className)}>
       {loading && <span className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden />}
       {children}
     </button>
@@ -47,7 +47,7 @@ export function ProjectLabel({ name }: { name: string }) {
 }
 export function PriorityMark({ high }: { high: boolean }) {
   if (!high) return null;
-  return <span className="rounded-md bg-warm-soft px-1.5 py-0.5 text-xs font-bold text-ink">Priority</span>;
+  return <span className="rounded-md bg-warm-soft px-1.5 py-0.5 text-xs text-ink">Priority</span>;
 }
 
 export function Card({ className, ...p }: React.HTMLAttributes<HTMLDivElement>) {
@@ -69,7 +69,7 @@ export function EmptyState({ title, body, action }: { title: string; body: strin
 export function ErrorState({ title, body, onRetry }: { title: string; body: string; onRetry?: () => void }) {
   return (
     <div role="alert" className="rounded-[16px] border border-line bg-warm-soft p-5">
-      <p className="font-bold">{title}</p>
+      <p className="">{title}</p>
       <p className="mt-1 text-muted">{body}</p>
       {onRetry && <Button className="mt-3" size="sm" onClick={onRetry}>Try again</Button>}
     </div>
@@ -79,7 +79,7 @@ export function ErrorState({ title, body, onRetry }: { title: string; body: stri
 /** Signature ASAP motif: layered flowing landscape forms. Used sparingly. */
 export function Motif({ className, tone = "light" }: { className?: string; tone?: "light" | "deep" }) {
   const a = tone === "deep" ? "#4f805b" : "var(--sage)";
-  const b = tone === "deep" ? "#6a4fc1" : "var(--ai)";
+  const b = tone === "deep" ? "#344f3b" : "var(--ai)";
   const c = tone === "deep" ? "#f2c6ad" : "var(--warm)";
   return (
     <svg viewBox="0 0 800 160" preserveAspectRatio="none" className={className} aria-hidden="true">
@@ -91,7 +91,7 @@ export function Motif({ className, tone = "light" }: { className?: string; tone?
 }
 
 export function Mark({ size = 28, tone = "light" }: { size?: number; tone?: "light" | "dark" | "ai" }) {
-  const path = tone === "dark" ? "#C8B5ED" : "#252044";
+  const path = tone === "dark" ? "#dce8d9" : "#252044";
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
       <path d="M5 25C5 13 13 4 28 3c0 14-8 24-20 24z" fill={tone === "ai" ? "#4F805B" : tone === "dark" ? "#6FA77C" : "#4F805B"} />
@@ -104,7 +104,7 @@ export function Logo({ light = false }: { light?: boolean }) {
   return (
     <span className="flex items-center gap-2.5" aria-label="ASAP">
       <Mark size={30} tone={light ? "dark" : "light"} />
-      <span className="text-lg font-extrabold tracking-tight">ASAP</span>
+      <span className="text-lg tracking-tight">ASAP</span>
     </span>
   );
 }
@@ -152,7 +152,7 @@ export function ConfirmDialog({ open, title, body, confirmLabel, onConfirm, onCl
   return (
     <Overlay open={open} onClose={onClose} title={title}>
       <div className="p-6">
-        <h2 className="text-xl font-bold">{title}</h2>
+        <h2 className="text-xl ">{title}</h2>
         <p className="mt-2 text-muted">{body}</p>
         <div className="mt-6 flex justify-end gap-2">
           <Button onClick={onClose}>Cancel</Button>

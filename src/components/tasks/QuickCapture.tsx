@@ -14,7 +14,7 @@ export function QuickCapture({ compact = false }: { compact?: boolean }) {
     if (!title) return;
     if (/,|;| and (email|call|book|finish|prepare|send|submit)/i.test(title)) { openDump(title); setV(""); return; }
     dispatch({ type: "addTasks", tasks: [{ id: newId(), title: title[0].toUpperCase() + title.slice(1), project: guessProject(title), minutes: estimateMinutes(title), priority: "normal", due: explicitDue(title), today: false, done: false, steps: [] }] });
-    toast("Added to My Work");
+    toast("Added to My Tasks");
     setV("");
   };
   return (

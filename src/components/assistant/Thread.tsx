@@ -15,12 +15,12 @@ export function ChatMessageView({ m, ask }: { m: ReturnType<typeof useAsk>["mess
       {m.proposal && (
         <div className="w-full max-w-[92%] rounded-[16px] border border-ai bg-surface p-4">
           <p className="eyebrow">Proposed change</p>
-          <p className="mt-1 font-bold">{m.proposal.title}</p>
+          <p className="mt-1 ">{m.proposal.title}</p>
           <p className="mt-1 whitespace-pre-line text-sm text-muted">{m.proposal.detail}</p>
           {m.proposal.status === "pending" ? (
             <div className="mt-3 flex gap-2">
               {ask.guidance === "suggest" ? (
-                <p className="text-sm text-muted">Guidance is set to Suggest, so ASAP won&apos;t apply this. <button className="font-bold underline" onClick={() => ask.decide(m, false)}>Dismiss</button></p>
+                <p className="text-sm text-muted">Guidance is set to Suggest, so ASAP won&apos;t apply this. <button className="underline" onClick={() => ask.decide(m, false)}>Dismiss</button></p>
               ) : (
                 <>
                   <Button size="sm" variant="primary" onClick={() => ask.decide(m, true)}>Approve</Button>
@@ -29,7 +29,7 @@ export function ChatMessageView({ m, ask }: { m: ReturnType<typeof useAsk>["mess
               )}
             </div>
           ) : (
-            <p className="mt-3 text-sm font-semibold text-muted">{m.proposal.status === "approved" ? "✓ Applied" : "Dismissed"}</p>
+            <p className="mt-3 text-sm text-muted">{m.proposal.status === "approved" ? "✓ Applied" : "Dismissed"}</p>
           )}
         </div>
       )}
@@ -42,7 +42,7 @@ export function ChatMessageView({ m, ask }: { m: ReturnType<typeof useAsk>["mess
   );
 }
 
-export function Composer({ ask, placeholder = "Ask ASAP anything…" }: { ask: ReturnType<typeof useAsk>; placeholder?: string }) {
+export function Composer({ ask, placeholder = "Ask the coach anything…" }: { ask: ReturnType<typeof useAsk>; placeholder?: string }) {
   const [v, setV] = useState("");
   const submit = (e: React.FormEvent) => { e.preventDefault(); ask.send(v); setV(""); };
   return (

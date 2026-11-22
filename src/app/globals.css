@@ -5,42 +5,43 @@
    only the values change. See docs/DESIGN_SYSTEM.md.
    ------------------------------------------------------------------ */
 :root {
-  /* brand palette (reference values from the brief) */
+  /* brand palette */
   --indigo: #252044;
-  --lavender: #c8b5ed;
   --green: #4f805b;
+  --forest: #344f3b;
   --sage: #dce8d9;
   --ivory: #faf7f2;
   --peach: #f2c6ad;
+  --stone: #eae6df;
 
   /* semantic (light) */
   --bg: #faf7f2;
   --surface: #ffffff;
-  --surface-sunk: #f3f0f8; /* secondary surface */
+  --surface-sunk: #f4f1ea;
   --ink: #252044;
-  --muted: #6b6780; /* #77738A darkened slightly to pass 4.5:1 on ivory */
-  --line: #e9e4e9;
+  --muted: #6b675f; /* #77736D darkened slightly to pass 4.5:1 on ivory */
+  --line: #eae6df;
   --brand: #252044;
+  --nav: #252044;
   --brand-ink: #ffffff;
   --action: #3f6f4b; /* #4F805B darkened for 4.5:1 with white text */
-  --action-hover: #355f40;
+  --action-hover: #344f3b;
   --action-ink: #ffffff;
-  --action-soft: #edf3ea; /* green surface */
-  --sage: #dce8d9;
-  --ai: #c8b5ed;
-  --ai-soft: #f1ecf8; /* lavender surface */
-  --ai-ink: #3d2f6b;
+  --action-soft: #edf3ea;
+  --ai: #4f805b;
+  --ai-soft: #edf3ea;
+  --ai-ink: #344f3b;
   --warm: #f2c6ad;
   --warm-soft: #fbece3;
-  --focus-ring: #6a4fc1;
-  --shadow-1: 0 1px 2px rgb(37 32 68 / 0.06), 0 1px 1px rgb(37 32 68 / 0.04);
-  --shadow-2: 0 8px 24px -8px rgb(37 32 68 / 0.18);
-  --shadow-3: 0 24px 60px -16px rgb(37 32 68 / 0.28);
+  --focus-ring: #3f6f4b;
+  --shadow-1: 0 1px 2px rgb(37 32 68 / 0.05);
+  --shadow-2: 0 8px 24px -10px rgb(37 32 68 / 0.16);
+  --shadow-3: 0 24px 60px -18px rgb(37 32 68 / 0.24);
 
   --radius-sm: 8px;
   --radius-input: 10px;
-  --radius-card: 16px;
-  --radius-feature: 24px;
+  --radius-card: 14px;
+  --radius-feature: 20px;
 
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   --dur-micro: 160ms;
@@ -49,24 +50,25 @@
 }
 
 [data-theme="dark"] {
-  --bg: #15122a;
-  --surface: #201c3a;
-  --surface-sunk: #1a1632;
-  --ink: #f1eef8;
-  --muted: #aaa6bf;
-  --line: #34305a;
-  --brand: #c8b5ed;
-  --brand-ink: #1c1736;
+  --bg: #15141c;
+  --surface: #1e1d27;
+  --surface-sunk: #191821;
+  --ink: #f4f0e8;
+  --muted: #a8a39a;
+  --line: #34323f;
+  --brand: #f4f0e8;
+  --nav: #1b1a26;
+  --brand-ink: #15141c;
   --action: #6fa77c;
   --action-hover: #82b78e;
   --action-ink: #0f1a12;
-  --action-soft: #22352a;
-  --ai: #c8b5ed;
-  --ai-soft: #2c2650;
-  --ai-ink: #e2d7f7;
+  --action-soft: #222d27;
+  --ai: #6fa77c;
+  --ai-soft: #1f2a25;
+  --ai-ink: #cfe3d3;
   --warm: #f2c6ad;
-  --warm-soft: #3a2c34;
-  --focus-ring: #c8b5ed;
+  --warm-soft: #3a2f2c;
+  --focus-ring: #9cc5a4;
   --shadow-1: 0 1px 2px rgb(0 0 0 / 0.3);
   --shadow-2: 0 8px 24px -8px rgb(0 0 0 / 0.5);
   --shadow-3: 0 24px 60px -16px rgb(0 0 0 / 0.6);
@@ -80,6 +82,7 @@
   --color-muted: var(--muted);
   --color-line: var(--line);
   --color-brand: var(--brand);
+  --color-nav: var(--nav);
   --color-brand-ink: var(--brand-ink);
   --color-action: var(--action);
   --color-action-ink: var(--action-ink);
@@ -89,13 +92,17 @@
   --color-ai-ink: var(--ai-ink);
   --color-warm: var(--warm);
   --color-warm-soft: var(--warm-soft);
-  --font-sans: var(--font-manrope), system-ui, sans-serif;
+  --font-sans: var(--font-serif), Georgia, "Times New Roman", serif;
   --font-serif: var(--font-serif), Georgia, serif;
-  --font-mono: var(--font-mono), ui-monospace, monospace;
+  --font-mono: var(--font-serif), Georgia, "Times New Roman", serif;
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+  --text-base: 1.0625rem;
+  --text-lg: 1.25rem;
   --radius-sm: 8px;
   --radius-input: 10px;
-  --radius-card: 16px;
-  --radius-feature: 24px;
+  --radius-card: 14px;
+  --radius-feature: 20px;
   --shadow-1: var(--shadow-1);
   --shadow-2: var(--shadow-2);
   --shadow-3: var(--shadow-3);
@@ -109,9 +116,11 @@ html {
 body {
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--font-manrope), system-ui, sans-serif;
-  font-size: 16px;
+  font-family: var(--font-serif), Georgia, "Times New Roman", serif;
+  font-size: 17px;
   line-height: 1.5;
+  letter-spacing: 0.005em;
+  font-synthesis: none;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -124,19 +133,18 @@ body {
 .display {
   font-family: var(--font-serif), Georgia, serif;
   font-weight: 400;
-  letter-spacing: -0.01em;
-  line-height: 1.1;
+  letter-spacing: -0.015em;
+  line-height: 1.08;
 }
 .eyebrow {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-size: 13px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--muted);
 }
 .tnum {
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-variant-numeric: tabular-nums;
+  font-family: var(--font-serif), Georgia, serif;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 /* motion */

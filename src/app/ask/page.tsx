@@ -15,13 +15,13 @@ export default function AskPage() {
     <div className="flex min-h-[calc(100dvh-14rem)] flex-col gap-6">
       <header>
         <p className="eyebrow">Your companion</p>
-        <h1 className="display mt-2 text-5xl">Ask ASAP</h1>
+        <h1 className="display mt-2 text-5xl">AI Coach</h1>
         <p className="mt-2 max-w-xl text-lg text-muted">It reads your real tasks. Anything that changes your plan is shown to you first.</p>
       </header>
       <div className="flex-1">
         {ask.messages.length === 0 ? (
           <div className="flex flex-col items-start gap-3">
-            {starters.map((s) => <button key={s} onClick={() => ask.send(s)} className="rounded-[14px] border border-ai bg-surface px-4 py-3 text-left font-semibold transition-colors hover:bg-ai-soft">{s}</button>)}
+            {starters.map((s) => <button key={s} onClick={() => ask.send(s)} className="rounded-[14px] border border-ai bg-surface px-4 py-3 text-left transition-colors hover:bg-ai-soft">{s}</button>)}
             <Button variant="ghost" onClick={() => openDump()}><Icon name="plus" size={16} />Brain Dump instead</Button>
           </div>
         ) : <ThreadBody ask={ask} />}

@@ -1,12 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Manrope, Instrument_Serif, IBM_Plex_Mono } from "next/font/google";
+import { Instrument_Serif } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/lib/store";
 import { AppShell } from "@/components/navigation/AppShell";
 
-const manrope = Manrope({ variable: "--font-manrope", subsets: ["latin"] });
-const serif = Instrument_Serif({ variable: "--font-serif", subsets: ["latin"], weight: "400" });
-const mono = IBM_Plex_Mono({ variable: "--font-mono", subsets: ["latin"], weight: ["400", "500"] });
+const serif = Instrument_Serif({ variable: "--font-serif", subsets: ["latin"], weight: "400", style: ["normal", "italic"], display: "swap", fallback: ["Georgia", "Times New Roman", "serif"] });
 
 export const metadata: Metadata = {
   title: "ASAP — Know what matters. Know where to start.",
@@ -16,7 +14,7 @@ export const viewport: Viewport = { themeColor: "#252044" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${manrope.variable} ${serif.variable} ${mono.variable}`}>
+    <html lang="en" suppressHydrationWarning className={serif.variable}>
       <body>
         <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-brand focus:px-4 focus:py-2 focus:text-brand-ink">
           Skip to content

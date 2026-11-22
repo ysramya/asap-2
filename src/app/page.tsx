@@ -43,14 +43,14 @@ export default function Home() {
       </header>
 
       {next ? (
-        <section aria-labelledby="next-h" className="relative overflow-hidden rounded-[24px] bg-[#252044] p-6 pb-24 text-[#f1eef8] shadow-[var(--shadow-2)] sm:p-9 sm:pb-9">
+        <section aria-labelledby="next-h" className="relative overflow-hidden rounded-[24px] bg-[#252044] p-6 pb-24 text-[#f4f0e8] shadow-[var(--shadow-2)] sm:p-9 sm:pb-9">
           <Motif tone="deep" className="pointer-events-none absolute inset-x-0 bottom-0 h-28 w-full opacity-80" />
-          <p id="next-h" className="eyebrow !text-[#c8b5ed]">Your next step</p>
+          <p id="next-h" className="eyebrow !text-[#dce8d9]">Your next step</p>
           <h2 className="display mt-3 max-w-xl text-4xl sm:text-5xl">{next.title}</h2>
-          <p className="mt-3 text-[#d9d3ee]">Approximately <span className="tnum">{next.minutes}</span> minutes · {next.project}</p>
+          <p className="mt-3 text-[#e6e2d8]">Approximately <span className="tnum">{next.minutes}</span> minutes · {next.project}</p>
           <div className="relative mt-7 flex flex-wrap gap-3">
             <Button variant="primary" size="lg" onClick={startFocus} className="!bg-[#6fa77c] !text-[#0f1a12]"><Icon name="play" size={18} />Start Focus</Button>
-            <Button size="lg" variant="ghost" className="!text-[#f1eef8] hover:!bg-white/10" onClick={() => complete(next)}><Icon name="check" size={18} />Mark done</Button>
+            <Button size="lg" variant="ghost" className="!text-[#f4f0e8] hover:!bg-white/10" onClick={() => complete(next)}><Icon name="check" size={18} />Mark done</Button>
           </div>
         </section>
       ) : (
@@ -81,7 +81,7 @@ export default function Home() {
         <QuickCapture />
         {rest.length > 0 && (
           <div>
-            <button onClick={() => setShowAll((s) => !s)} aria-expanded={showAll} className="inline-flex min-h-11 items-center gap-1 text-[15px] font-semibold text-muted hover:text-ink">
+            <button onClick={() => setShowAll((s) => !s)} aria-expanded={showAll} className="inline-flex min-h-11 items-center gap-1 text-[15px] text-muted hover:text-ink">
               <Icon name="chevron" size={16} className={showAll ? "rotate-90 transition-transform" : "transition-transform"} />
               {showAll ? "Hide" : `Show ${rest.length} more`} {showAll ? "other tasks" : rest.length === 1 ? "task" : "tasks"}
             </button>

@@ -28,7 +28,7 @@ export function TaskRow({ task, index, expandable = false }: { task: Task; index
         <Checkbox checked={task.done} onChange={() => complete(task)} label={`Mark “${task.title}” ${task.done ? "not done" : "done"}`} />
         {index !== undefined && <span className="tnum w-5 text-sm text-muted" aria-hidden>{index + 1}</span>}
         <div className="min-w-0 flex-1 py-3">
-          <p className={cx("truncate text-[17px] font-semibold", task.done && "text-muted line-through")}>{task.title}</p>
+          <p className={cx("truncate text-[17px] ", task.done && "text-muted line-through")}>{task.title}</p>
           <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1">
             <ProjectLabel name={task.project} />
             <Meta icon="clock"><span className="tnum">{task.minutes} min</span></Meta>
