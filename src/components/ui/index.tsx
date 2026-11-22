@@ -90,14 +90,20 @@ export function Motif({ className, tone = "light" }: { className?: string; tone?
   );
 }
 
+export function Mark({ size = 28, tone = "light" }: { size?: number; tone?: "light" | "dark" | "ai" }) {
+  const path = tone === "dark" ? "#C8B5ED" : "#252044";
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
+      <path d="M5 25C5 13 13 4 28 3c0 14-8 24-20 24z" fill={tone === "ai" ? "#4F805B" : tone === "dark" ? "#6FA77C" : "#4F805B"} />
+      <path d="M7 26c5-6 10-11 16-16" stroke={path} strokeWidth="2.2" fill="none" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function Logo({ light = false }: { light?: boolean }) {
   return (
     <span className="flex items-center gap-2.5" aria-label="ASAP">
-      <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true">
-        <rect width="28" height="28" rx="8" fill={light ? "#C8B5ED" : "var(--brand)"} />
-        <path d="M5 20c4-1 5-8 9-8s4 4 9 2" stroke="#4F805B" strokeWidth="2.6" fill="none" strokeLinecap="round" />
-        <path d="M5 15c3 0 5-5 9-5" stroke={light ? "#252044" : "var(--brand-ink)"} strokeWidth="2" fill="none" strokeLinecap="round" opacity=".7" />
-      </svg>
+      <Mark size={30} tone={light ? "dark" : "light"} />
       <span className="text-lg font-extrabold tracking-tight">ASAP</span>
     </span>
   );

@@ -1,12 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Manrope, Instrument_Serif, JetBrains_Mono } from "next/font/google";
+import { Manrope, Instrument_Serif, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/lib/store";
 import { AppShell } from "@/components/navigation/AppShell";
 
 const manrope = Manrope({ variable: "--font-manrope", subsets: ["latin"] });
 const serif = Instrument_Serif({ variable: "--font-serif", subsets: ["latin"], weight: "400" });
-const mono = JetBrains_Mono({ variable: "--font-mono", subsets: ["latin"] });
+const mono = IBM_Plex_Mono({ variable: "--font-mono", subsets: ["latin"], weight: ["400", "500"] });
 
 export const metadata: Metadata = {
   title: "ASAP — Know what matters. Know where to start.",

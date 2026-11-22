@@ -16,18 +16,19 @@
   /* semantic (light) */
   --bg: #faf7f2;
   --surface: #ffffff;
-  --surface-sunk: #f3efe8;
+  --surface-sunk: #f3f0f8; /* secondary surface */
   --ink: #252044;
   --muted: #6b6780; /* #77738A darkened slightly to pass 4.5:1 on ivory */
-  --line: #e6e0d6;
+  --line: #e9e4e9;
   --brand: #252044;
   --brand-ink: #ffffff;
   --action: #3f6f4b; /* #4F805B darkened for 4.5:1 with white text */
   --action-hover: #355f40;
   --action-ink: #ffffff;
-  --action-soft: #dce8d9;
+  --action-soft: #edf3ea; /* green surface */
+  --sage: #dce8d9;
   --ai: #c8b5ed;
-  --ai-soft: #efe9fa;
+  --ai-soft: #f1ecf8; /* lavender surface */
   --ai-ink: #3d2f6b;
   --warm: #f2c6ad;
   --warm-soft: #fbece3;

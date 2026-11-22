@@ -1,4 +1,5 @@
 "use client";
+import { Mark } from "@/components/ui";
 import { useApp } from "@/lib/store";
 import { pickToday } from "@/lib/planner";
 import { useAsk } from "@/hooks/useAsk";
@@ -18,7 +19,7 @@ export function AskPanel({ onClose }: { onClose: () => void }) {
     <section aria-label="Ask ASAP" className="flex h-full flex-col bg-surface">
       <header className="flex items-center justify-between border-b border-line px-5 py-4">
         <div className="flex items-center gap-2.5">
-          <span className="grid size-8 place-items-center rounded-full bg-ai text-[#252044]"><Icon name="spark" size={16} /></span>
+          <span className="grid size-8 place-items-center rounded-full bg-ai text-[#252044]"><Mark size={18} tone="ai" /></span>
           <div><h2 className="text-[15px] font-bold leading-tight">Ask ASAP</h2><p className="text-xs text-muted">Your companion</p></div>
         </div>
         <button onClick={onClose} aria-label="Close Ask ASAP" className="grid size-11 place-items-center rounded-full hover:bg-sunk"><Icon name="close" size={18} /></button>

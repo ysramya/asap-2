@@ -49,3 +49,10 @@ Manrope (UI), Instrument Serif (`.display`: greeting, page titles, next step), J
 - Nothing the assistant proposes changes data until the user approves it (proposal cards).
 - Guidance level (Settings): Suggest = no apply button, Assist = approve each change, Execute = behaves like Assist until an integration exists.
 - Due dates are only set when the user names a day.
+
+## Visual identity ("Editorial Intelligence")
+
+- **Type:** Instrument Serif for identity moments (greetings, page and feature headings, Focus task title); Manrope for everything interactive; IBM Plex Mono (`.tnum`) for timers, durations and numeric metadata.
+- **Colour roles:** indigo = identity/structure, green = action and progress, lavender = AI, sage = calm support, peach = occasional warmth.
+- **Surfaces:** canvas `#FAF7F2`, card `#FFFFFF`, secondary `#F3F0F8` (`--surface-sunk`), green surface `#EDF3EA` (`--action-soft`), lavender surface `#F1ECF8` (`--ai-soft`), border `#E9E4E9` (`--line`). Dark theme is a separate indigo-charcoal palette, not an inversion.
+- **Mark:** a leaf with a pathway line (`Mark` in `components/ui`), used in the sidebar, the AI companion avatar and the favicon (`src/app/icon.svg`).
