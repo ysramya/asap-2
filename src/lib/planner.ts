@@ -138,3 +138,31 @@ export function pickToday(tasks: Task[], limit = 3): Task[] {
   const score = (t: Task) => (t.priority === "high" ? 0 : 2) + (t.due ? 0 : 1) + (t.today ? -3 : 0);
   return [...open].sort((a, b) => score(a) - score(b) || a.minutes - b.minutes).slice(0, limit);
 }
+
+export const DEFAULT_PROJECTS = ["Inbox", "Career", "Personal", "School", "Work"];
+export function projectsOf(tasks: Task[]): string[] {
+  return Array.from(new Set([...DEFAULT_PROJECTS, ...tasks.map((t) => t.project)]));
+}
+
+export type Status = "To do" | "In progress" | "Done";
+export function taskStatus(t: Task, activeId?: string | null): Status {
+  if (t.done) return "Done";
+  if (t.id === activeId || t.steps.some((s) => s.done)) return "In progress";
+  return "To do";
+}
+
+export function dueLabel(due?: string, now = new Date()): string | undefined {
+  if (!due) return undefined;
+  const iso = (d: Date) => d.toISOString().slice(0, 10);
+  const tm = new Date(now); tm.setDate(tm.getDate() + 1);
+  if (due === iso(now)) return "Due today";
+  if (due === iso(tm)) return "Due tomorrow";
+  if (due < iso(now)) return "Overdue";
+  return "Due " + new Date(due + "T12:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
+export function formatMinutes(m: number): string {
+  if (m < 60) return `${m} min`;
+  const h = Math.floor(m / 60), r = m % 60;
+  return r ? `${h} h ${r} min` : `${h} h`;
+}

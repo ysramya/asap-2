@@ -3,7 +3,8 @@ import { useState } from "react";
 import { useApp } from "@/lib/store";
 import { Button, EmptyState, cx } from "@/components/ui";
 import { Icon } from "@/components/ui/Icon";
-import { QuickCapture } from "@/components/tasks/QuickCapture";
+import { TaskComposer } from "@/components/tasks/TaskComposer";
+import { projectsOf, taskStatus } from "@/lib/planner";
 import type { Task } from "@/types";
 import { TaskRow } from "@/components/tasks/TaskRow";
 
@@ -18,8 +19,15 @@ export default function Work() {
   const { state, openDump } = useApp();
   const [tab, setTab] = useState<(typeof TABS)[number]>("Tasks");
   const [q, setQ] = useState("");
+  const [project, setProject] = useState("All");
+  const [status, setStatus] = useState("All");
+  const [prio, setPrio] = useState("All");
 
-  const match = (t: { title: string }) => !q || t.title.toLowerCase().includes(q.toLowerCase());
+  const match = (t: Task) =>
+    (!q || t.title.toLowerCase().includes(q.toLowerCase())) &&
+    (project === "All" || t.project === project) &&
+    (prio === "All" || (prio === "Priority" ? t.priority === "high" : t.priority !== "high")) &&
+    (status === "All" || taskStatus(t, state.activeTaskId) === status);
   const open = state.tasks.filter((t) => !t.done && match(t));
   const done = state.tasks.filter((t) => t.done && match(t));
 
@@ -30,7 +38,7 @@ export default function Work() {
         <Button variant="brand" onClick={() => openDump()}><Icon name="plus" size={18} />Brain Dump</Button>
       </header>
 
-      <QuickCapture compact />
+      <TaskComposer id="work-composer" />
 
       <div className="flex flex-wrap items-center gap-3">
         <div role="tablist" aria-label="Views" className="flex rounded-[12px] bg-sunk p-1">
@@ -47,6 +55,16 @@ export default function Work() {
           <input id="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search"
             className="h-11 w-full rounded-[10px] border border-line bg-surface pl-9 pr-3" />
         </div>
+      </div>
+
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Filters">
+        {([["Project", project, setProject, ["All", ...projectsOf(state.tasks)]], ["Status", status, setStatus, ["All", "To do", "In progress"]], ["Priority", prio, setPrio, ["All", "Priority", "Normal"]]] as const).map(([label, val, set, opts]) => (
+          <label key={label} className="flex items-center gap-2 text-sm text-muted">{label}
+            <select value={val} onChange={(e) => set(e.target.value)} className="h-10 rounded-[10px] border border-line bg-surface px-2 text-[15px] text-ink">
+              {opts.map((o) => <option key={o}>{o}</option>)}
+            </select>
+          </label>
+        ))}
       </div>
 
       <div role="tabpanel">

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useApp } from "@/lib/store";
 import { Button, Checkbox, Meta, PriorityMark, ProjectLabel, cx } from "@/components/ui";
 import { Icon } from "@/components/ui/Icon";
-import { stepsFor } from "@/lib/planner";
+import { dueLabel, projectsOf, stepsFor, taskStatus } from "@/lib/planner";
 import { AI_NOTE } from "@/lib/ai";
 import type { Step, Task } from "@/types";
 
@@ -16,8 +16,9 @@ export function useCompleteTask() {
 }
 
 export function TaskRow({ task, index, expandable = false }: { task: Task; index?: number; expandable?: boolean }) {
-  const { dispatch, toast } = useApp();
+  const { state, dispatch, toast } = useApp();
   const complete = useCompleteTask();
+  const status = taskStatus(task, state.activeTaskId);
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<Step[] | null>(null);
   const doneSteps = task.steps.filter((s) => s.done).length;
@@ -32,7 +33,8 @@ export function TaskRow({ task, index, expandable = false }: { task: Task; index
           <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1">
             <ProjectLabel name={task.project} />
             <Meta icon="clock"><span className="tnum">{task.minutes} min</span></Meta>
-            {task.due && <Meta>Due {task.due}</Meta>}
+            {task.due && <Meta><span className={dueLabel(task.due) === "Overdue" ? "font-semibold text-ink" : ""}>{dueLabel(task.due)}</span></Meta>}
+            <Meta>{status}</Meta>
             {task.steps.length > 0 && <Meta>{doneSteps}/{task.steps.length} steps</Meta>}
             <PriorityMark high={task.priority === "high"} />
           </div>
@@ -47,6 +49,21 @@ export function TaskRow({ task, index, expandable = false }: { task: Task; index
 
       {expandable && open && (
         <div className="fade-enter ml-12 flex flex-col gap-4 pb-4 pr-3">
+          <div className="flex flex-wrap items-end gap-3">
+            <label className="flex min-w-[200px] flex-1 flex-col gap-1 text-sm text-muted">Title
+              <input defaultValue={task.title} key={task.title} onBlur={(e) => { const v = e.target.value.trim(); if (v && v !== task.title) dispatch({ type: "update", id: task.id, patch: { title: v } }); }}
+                className="h-10 rounded-[8px] border border-line bg-surface px-2 text-[15px] text-ink" />
+            </label>
+            <label className="flex flex-col gap-1 text-sm text-muted">Project
+              <select value={task.project} onChange={(e) => dispatch({ type: "update", id: task.id, patch: { project: e.target.value } })} className="h-10 rounded-[8px] border border-line bg-surface px-2 text-[15px] text-ink">
+                {projectsOf(state.tasks).map((p) => <option key={p}>{p}</option>)}
+              </select>
+            </label>
+            <label className="flex flex-col gap-1 text-sm text-muted">Minutes
+              <input type="number" min={1} max={480} defaultValue={task.minutes} key={task.minutes} onBlur={(e) => { const n = Math.max(1, Math.min(480, Number(e.target.value) || task.minutes)); if (n !== task.minutes) dispatch({ type: "update", id: task.id, patch: { minutes: n } }); }}
+                className="tnum h-10 w-20 rounded-[8px] border border-line bg-surface px-2 text-[15px] text-ink" />
+            </label>
+          </div>
           {task.steps.length > 0 && (
             <ul className="flex flex-col">
               {task.steps.map((s) => (

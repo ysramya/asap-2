@@ -13,6 +13,7 @@ import { BrainDump } from "@/components/modals/BrainDump";
 const NAV = [
   { href: "/", label: "Home", icon: "home" },
   { href: "/work", label: "My Tasks", icon: "work" },
+  { href: "/planner", label: "Planner", icon: "clock" },
   { href: "/focus", label: "Focus", icon: "focus" },
 ] as const;
 
@@ -99,7 +100,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </Overlay>
 
       {/* Mobile bottom nav */}
-      <nav aria-label="Primary" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden">
+      <nav aria-label="Primary" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden">
         {NAV.map((n) => (
           <Link key={n.href} href={n.href} aria-current={isActive(n.href) ? "page" : undefined}
             className={cx("flex h-16 flex-col items-center justify-center gap-0.5 text-xs font-bold", isActive(n.href) ? "text-action" : "text-muted")}>

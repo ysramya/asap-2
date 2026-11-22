@@ -1,94 +1,108 @@
 "use client";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useApp } from "@/lib/store";
-import { pickToday } from "@/lib/planner";
-import { Button, EmptyState, Motif } from "@/components/ui";
+import { formatMinutes, pickToday } from "@/lib/planner";
+import { Button, Mark } from "@/components/ui";
 import { Icon } from "@/components/ui/Icon";
-import { QuickCapture } from "@/components/tasks/QuickCapture";
-import { TaskRow, useCompleteTask } from "@/components/tasks/TaskRow";
-import { useAsk } from "@/hooks/useAsk";
+import { TaskComposer } from "@/components/tasks/TaskComposer";
+import { TaskRow } from "@/components/tasks/TaskRow";
 
-function greeting(name: string) {
-  const h = new Date().getHours();
-  const g = h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
-  return name ? `${g}, ${name}.` : `${g}.`;
-}
+const LIMIT = 4;
+const sameDay = (ts?: number) => !!ts && new Date(ts).toDateString() === new Date().toDateString();
 
 export default function Home() {
-  const { state, dispatch, openDump } = useApp();
+  const { state, dispatch } = useApp();
   const router = useRouter();
-  const ask = useAsk();
-  const complete = useCompleteTask();
-  const [showAll, setShowAll] = useState(false);
+  const [all, setAll] = useState(false);
+  const dark = state.settings.theme === "dark";
 
   const open = state.tasks.filter((t) => !t.done);
-  const planned = open.filter((t) => t.today).slice(0, 3);
-  const priorities = planned.length ? planned : pickToday(state.tasks, 3);
-  const rest = open.filter((t) => !priorities.includes(t));
-  const next = priorities[0];
-  const minutes = priorities.reduce((a, t) => a + t.minutes, 0);
-  const doneToday = state.tasks.filter((t) => t.done && t.doneAt && new Date(t.doneAt).toDateString() === new Date().toDateString()).length;
+  const day = state.tasks.filter((t) => t.today && (!t.done || sameDay(t.doneAt)));
+  const dayOpen = day.filter((t) => !t.done);
+  const shown = all ? day : day.slice(0, LIMIT);
+  const next = dayOpen[0] ?? pickToday(state.tasks, 1)[0];
+  const minutes = dayOpen.reduce((a, t) => a + t.minutes, 0);
+  const projects = new Set(open.map((t) => t.project)).size;
 
   const startFocus = () => { if (!next) return; dispatch({ type: "active", id: next.id }); router.push("/focus"); };
 
   return (
     <div className="flex flex-col gap-10">
-      <header>
-        <p className="eyebrow">{new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}</p>
-        <h1 className="display mt-2 text-5xl sm:text-6xl">{greeting(state.settings.name)}</h1>
-        <p className="mt-3 text-lg text-muted">
-          {next ? "Let's take today one step at a time." : doneToday ? "Everything planned is done. Nice and steady." : "A clear day. Add what's on your mind when you're ready."}
-        </p>
+      <header className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <Mark size={28} />
+          <div>
+            <p className="text-[15px] font-bold leading-tight">Home</p>
+            <p className="text-sm text-muted">{new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1">
+          <button onClick={() => dispatch({ type: "settings", patch: { theme: dark ? "light" : "dark" } })} aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+            className="grid size-11 place-items-center rounded-full hover:bg-sunk"><Icon name={dark ? "sun" : "moon"} /></button>
+          <Link href="/settings" aria-label="Profile and settings" className="grid size-11 place-items-center rounded-full hover:bg-sunk">
+            <span className="grid size-8 place-items-center rounded-full bg-action text-sm font-bold text-action-ink" aria-hidden>{(state.settings.name || "Me").slice(0, 1).toUpperCase()}</span>
+          </Link>
+        </div>
       </header>
 
-      {next ? (
-        <section aria-labelledby="next-h" className="relative overflow-hidden rounded-[24px] bg-[#252044] p-6 pb-24 text-[#f4f0e8] shadow-[var(--shadow-2)] sm:p-9 sm:pb-9">
-          <Motif tone="deep" className="pointer-events-none absolute inset-x-0 bottom-0 h-28 w-full opacity-80" />
-          <p id="next-h" className="eyebrow !text-[#dce8d9]">Your next step</p>
-          <h2 className="display mt-3 max-w-xl text-4xl sm:text-5xl">{next.title}</h2>
-          <p className="mt-3 text-[#e6e2d8]">Approximately <span className="tnum">{next.minutes}</span> minutes · {next.project}</p>
-          <div className="relative mt-7 flex flex-wrap gap-3">
-            <Button variant="primary" size="lg" onClick={startFocus} className="!bg-[#6fa77c] !text-[#0f1a12]"><Icon name="play" size={18} />Start Focus</Button>
-            <Button size="lg" variant="ghost" className="!text-[#f4f0e8] hover:!bg-white/10" onClick={() => complete(next)}><Icon name="check" size={18} />Mark done</Button>
-          </div>
-        </section>
-      ) : (
-        <EmptyState title={doneToday ? "All clear" : "Nothing planned yet"} body="Pour out whatever's on your mind. ASAP will sort it and you'll review before anything is saved."
-          action={<div className="flex flex-wrap justify-center gap-2"><Button variant="primary" onClick={() => openDump()}>Open Brain Dump</Button><Button onClick={() => ask.sendAndShow("review my day")}>Plan my day</Button></div>} />
-      )}
+      <section aria-labelledby="hero-h">
+        <h1 id="hero-h" className="display text-4xl sm:text-5xl">Your work, organized.<br />Your day, planned.</h1>
+        <p className="mt-4 max-w-xl text-lg text-muted">Manage your tasks, organize your priorities, and turn complex work into manageable steps with AI.</p>
+      </section>
 
-      {priorities.length > 0 && (
-        <section aria-labelledby="pri-h">
-          <div className="mb-2 flex items-baseline justify-between">
-            <h2 id="pri-h" className="eyebrow">Today&apos;s priorities</h2>
-            <span className="tnum text-sm text-muted">{minutes} min total</span>
-          </div>
-          <ul className="flex flex-col divide-y divide-line rounded-[16px] border border-line bg-surface p-1">
-            {priorities.map((t, i) => <TaskRow key={t.id} task={t} index={i} />)}
-          </ul>
-          {minutes > 90 && (
-            <div className="mt-3 flex flex-wrap items-center gap-3 rounded-[14px] bg-ai-soft px-4 py-3 text-[15px]">
-              <Icon name="spark" size={18} className="text-ai-ink" />
-              <span className="flex-1">That adds up to about {Math.round(minutes / 6) / 10} hours. Want a lighter day?</span>
-              <Button size="sm" variant="ai" onClick={() => ask.sendAndShow("review my day")}>Review my day</Button>
-            </div>
-          )}
-        </section>
-      )}
+      <section aria-label="Create a task"><TaskComposer addToToday id="home-composer" /></section>
 
-      <section aria-label="Capture" className="flex flex-col gap-3">
-        <QuickCapture />
-        {rest.length > 0 && (
+      <section aria-labelledby="day-h">
+        <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
           <div>
-            <button onClick={() => setShowAll((s) => !s)} aria-expanded={showAll} className="inline-flex min-h-11 items-center gap-1 text-[15px] font-semibold text-muted hover:text-ink">
-              <Icon name="chevron" size={16} className={showAll ? "rotate-90 transition-transform" : "transition-transform"} />
-              {showAll ? "Hide" : `Show ${rest.length} more`} {showAll ? "other tasks" : rest.length === 1 ? "task" : "tasks"}
-            </button>
-            {showAll && <ul className="fade-enter mt-1 flex flex-col divide-y divide-line rounded-[16px] border border-line bg-surface p-1">{rest.map((t) => <TaskRow key={t.id} task={t} />)}</ul>}
+            <h2 id="day-h" className="text-2xl font-bold tracking-tight">My Day</h2>
+            <p className="tnum text-sm text-muted">
+              {day.length ? `${dayOpen.length} to do · ${formatMinutes(minutes)} planned` : "Nothing planned for today yet"}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Link href="/planner" className="inline-flex h-11 items-center gap-2 rounded-[10px] border border-line bg-surface px-4 text-[15px] font-semibold hover:bg-sunk">Plan my day</Link>
+            {next && <Button variant="primary" onClick={startFocus}><Icon name="play" size={16} />Start focus</Button>}
+          </div>
+        </div>
+        {day.length ? (
+          <>
+            <ul className="flex flex-col divide-y divide-line rounded-[16px] border border-line bg-surface p-1">
+              {shown.map((t, i) => <TaskRow key={t.id} task={t} index={i} expandable />)}
+            </ul>
+            {day.length > LIMIT && (
+              <button onClick={() => setAll((a) => !a)} aria-expanded={all} className="mt-1 inline-flex min-h-11 items-center gap-1 text-[15px] font-semibold text-muted hover:text-ink">
+                <Icon name="chevron" size={16} className={all ? "rotate-90 transition-transform" : "transition-transform"} />
+                {all ? "Show fewer" : `Show ${day.length - LIMIT} more`}
+              </button>
+            )}
+          </>
+        ) : (
+          <div className="rounded-[16px] border border-dashed border-line bg-surface px-6 py-8 text-center">
+            <p className="font-bold">Your day is open.</p>
+            <p className="mx-auto mt-1 max-w-sm text-muted">Add a task above, or choose which of your {open.length} open tasks belong in today.</p>
+            <Link href="/planner" className="mt-4 inline-flex h-11 items-center rounded-[10px] bg-action px-4 text-[15px] font-semibold text-action-ink">Plan my day</Link>
           </div>
         )}
       </section>
+
+      <section aria-label="Where to go next" className="grid gap-3 sm:grid-cols-3">
+        {[
+          { href: "/work", n: "1", t: "My Tasks", d: `${open.length} open across ${projects} project${projects === 1 ? "" : "s"}. Create, edit, filter and search everything.` },
+          { href: "/planner", n: "2", t: "Planner", d: "Pick what belongs in today, estimate the workload, and ask AI for a suggestion." },
+          { href: "/focus", n: "3", t: "Focus", d: "Start a timer or Pomodoro and work through AI-made steps one at a time." },
+        ].map((c) => (
+          <Link key={c.href} href={c.href} onClick={c.href === "/focus" && next ? () => dispatch({ type: "active", id: next.id }) : undefined}
+            className="group rounded-[16px] border border-line bg-surface p-5 transition-colors hover:bg-sunk">
+            <span className="flex items-center justify-between"><span className="eyebrow">Step {c.n}</span><Icon name="arrow" size={16} className="text-muted transition-transform group-hover:translate-x-0.5" /></span>
+            <span className="mt-2 block text-lg font-bold">{c.t}</span>
+            <span className="mt-1 block text-[15px] text-muted">{c.d}</span>
+          </Link>
+        ))}
+      </section>
+      <p className="text-center text-sm text-muted">Create → Organize → Plan → Focus → Complete. The AI Coach is on the side whenever you want a hand.</p>
     </div>
   );
 }
