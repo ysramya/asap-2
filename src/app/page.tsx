@@ -104,10 +104,9 @@ export default function Home() {
         ))}
       </section>
       {state.settings.garden !== false && (
-        <Link href="/garden" aria-label="Open your garden" className="group flex items-center gap-4 overflow-hidden rounded-[16px] border border-line bg-surface pr-4 transition-colors hover:bg-sunk">
-          <span className="block h-24 w-44 shrink-0 sm:w-64"><GardenArt garden={state.garden} /></span>
-          <span className="min-w-0 flex-1"><span className="eyebrow">Your garden</span><span className="mt-1 block text-[15px]">{gardenCaption(state.garden)}</span></span>
-          <Icon name="arrow" size={16} className="text-muted" />
+        <Link href="/garden" aria-label="Open your garden" className="group block overflow-hidden rounded-[16px] border border-line bg-surface transition-shadow hover:shadow-[var(--shadow-2)]">
+          <span className="block aspect-[16/9] w-full sm:aspect-[21/9]"><GardenArt garden={state.garden} /></span>
+          <span className="flex items-center gap-3 px-4 py-3"><span className="min-w-0 flex-1"><span className="eyebrow">Your garden</span><span className="mt-0.5 block text-[15px]">{gardenCaption(state.garden)}</span></span><Icon name="arrow" size={16} className="text-muted" /></span>
         </Link>
       )}
       <p className="text-center text-sm text-muted">Create → Organize → Plan → Focus → Complete. The AI Coach is on the side whenever you want a hand.</p>

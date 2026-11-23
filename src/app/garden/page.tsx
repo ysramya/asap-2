@@ -25,7 +25,7 @@ export default function GardenPage() {
       {on ? (
         <>
           <div className="overflow-hidden rounded-[20px] border border-line bg-surface">
-            <div className="aspect-[640/260] w-full sm:aspect-[640/220]"><GardenArt garden={state.garden} full /></div>
+            <div className="aspect-[4/3] w-full sm:aspect-[1200/640]"><GardenArt garden={state.garden} full /></div>
           </div>
           <p className="text-center text-lg">{gardenCaption(state.garden)}</p>
           <section aria-labelledby="how-h" className="rounded-[16px] border border-line bg-surface p-5">

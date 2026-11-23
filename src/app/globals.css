@@ -180,7 +180,57 @@ body {
 button, [role="tab"], [role="radio"] { font-weight: 600; }
 h2, h3 { font-weight: 700; }
 
-/* Garden: slow, gentle sway. Disabled for reduced motion. */
-.garden-svg .sway { transform-box: fill-box; transform-origin: 50% 100%; animation: sway 7s ease-in-out infinite; }
-@keyframes sway { 0%, 100% { transform: rotate(-1.4deg); } 50% { transform: rotate(1.4deg); } }
-@media (prefers-reduced-motion: reduce) { .garden-svg .sway { animation: none; } }
+/* ───────── Garden: palette + one coherent breeze ───────── */
+.garden-svg {
+  --g-sky1:#f1ede2; --g-sky2:#f7eee2; --g-sky3:#f6dccb; --g-glow:#f6c9ae; --g-sun:#f8dcc8; --g-cloud:#ffffff;
+  --g-far:#cfdccd; --g-far-t:#bccdba; --g-mid:#b4c9b4; --g-mid-t:#a3bba5; --g-mid2:#97b49b;
+  --g-meadow1:#8fb094; --g-meadow2:#6e9778;
+  --g-path:#e9dcc5; --g-path-hi:#f4ead9; --g-path-edge:#c9b99d; --g-stone:#cdc4b3; --g-stone-hi:#ebe4d6;
+  --g-trunk:#6a5642; --g-trunk-hi:#a58b6d; --g-trunk-dk:#3e3125;
+  --g-l0:#2f4d3a; --g-l1:#4b7b59; --g-l2:#86b08f; --g-stem:#4c7a58;
+  --g-gr0:#3d6a4b; --g-gr1:#5a8c66; --g-gr2:#86b390;
+  --g-peach:#f0b59c; --g-peach2:#df947a; --g-peachL:#f8d8c7; --g-ivory:#fbf8f2; --g-center:#c98a5e;
+  --g-indigo:#4a5486; --g-indigo2:#8d93b8; --g-soil:#7a6650; --g-shadow:#25301f;
+}
+[data-theme="dark"] .garden-svg {
+  --g-sky1:#1a1a2b; --g-sky2:#262338; --g-sky3:#43364a; --g-glow:#d99a86; --g-sun:#e8b9a0; --g-cloud:#8f88a8;
+  --g-far:#2b3a3a; --g-far-t:#243332; --g-mid:#2d4339; --g-mid-t:#26392f; --g-mid2:#2f4a3c;
+  --g-meadow1:#34553f; --g-meadow2:#264332;
+  --g-path:#58504a; --g-path-hi:#6a6058; --g-path-edge:#463f3a; --g-stone:#756d63; --g-stone-hi:#9a9184;
+  --g-trunk:#54453a; --g-trunk-hi:#8a7461; --g-trunk-dk:#2a211b;
+  --g-l0:#1d3227; --g-l1:#325742; --g-l2:#5b8a69; --g-stem:#4b7b58;
+  --g-gr0:#2a4a37; --g-gr1:#3f6c51; --g-gr2:#64977a;
+  --g-peach:#eaa98f; --g-peach2:#d98a70; --g-peachL:#f1c9b6; --g-ivory:#efe8dc; --g-center:#c98a5e;
+  --g-indigo:#7d89c9; --g-indigo2:#aab0d8; --g-soil:#5d4d3d; --g-shadow:#0c100d;
+}
+/* Every swaying part pivots at its own base (local origin) and nests in its parent.
+   Two incommensurate cycles are layered (transform + rotate), so gusts never loop visibly. */
+.garden-svg .w {
+  transform-origin: 0 0;
+  animation:
+    wind-a var(--ta, 9s) cubic-bezier(.37,0,.63,1) var(--da, 0s) infinite,
+    wind-b var(--tb, 13s) cubic-bezier(.37,0,.63,1) var(--db, 0s) infinite;
+}
+/* lighter single-cycle variant for distant or minor parts */
+.garden-svg .w1 { transform-origin: 0 0; animation: wind-a var(--ta, 9s) cubic-bezier(.37,0,.63,1) var(--da, 0s) infinite; }
+@keyframes wind-a { 0%, 100% { transform: rotate(calc(var(--a, 1) * -0.4deg)); } 50% { transform: rotate(calc(var(--a, 1) * 1deg)); } }
+@keyframes wind-b { 0%, 100% { rotate: calc(var(--a, 1) * 0.35deg); } 50% { rotate: calc(var(--a, 1) * -0.3deg); } }
+.garden-svg .glow { animation: glow 28s ease-in-out infinite; }
+@keyframes glow { 0%, 100% { opacity: .78; } 50% { opacity: 1; } }
+.garden-svg .cloud { animation: cloud var(--cd, 70s) ease-in-out infinite; }
+@keyframes cloud { 0%, 100% { transform: translateX(-16px); } 50% { transform: translateX(16px); } }
+.garden-svg .drift { animation: drift var(--dur, 55s) linear var(--dl, 0s) infinite; }
+@keyframes drift { 0% { transform: translateX(-40px); opacity: 0; } 8% { opacity: .85; } 92% { opacity: .85; } 100% { transform: translateX(1260px); opacity: 0; } }
+.garden-svg .bob { animation: bob var(--bd, 8s) ease-in-out infinite alternate; }
+@keyframes bob { from { transform: translateY(calc(var(--y, 300px) - 18px)); } to { transform: translateY(calc(var(--y, 300px) + 26px)); } }
+/* Growth: rises out of the soil; the head opens last. Trees rise, then foliage unfurls. */
+.garden-svg .grow { animation: g-grow 3.6s cubic-bezier(.22,.61,.36,1) both; }
+@keyframes g-grow { from { transform: scale(var(--gx, .7), var(--gy, .02)); opacity: 0; } 20% { opacity: 1; } to { transform: scale(1, 1); opacity: 1; } }
+.garden-svg .grow .head-in { animation: g-open 2.4s cubic-bezier(.22,.61,.36,1) 1.6s both; }
+@keyframes g-open { from { transform: scale(.05); opacity: 0; } 55% { opacity: 1; } to { transform: scale(1); opacity: 1; } }
+.garden-svg .grow-tree { animation: g-tree 5.2s cubic-bezier(.22,.61,.36,1) both; }
+@keyframes g-tree { from { transform: scale(.55, .06); opacity: 0; } 18% { opacity: 1; } to { transform: scale(1, 1); opacity: 1; } }
+.garden-svg .fol { animation: g-fol 3.4s cubic-bezier(.22,.61,.36,1) 2.4s both; }
+@keyframes g-fol { from { transform: scale(.15); opacity: 0; } 50% { opacity: 1; } to { transform: scale(1); opacity: 1; } }
+.garden-svg[data-active="false"] * { animation-play-state: paused !important; }
+@media (prefers-reduced-motion: reduce) { .garden-svg *, .garden-svg { animation: none !important; } }
