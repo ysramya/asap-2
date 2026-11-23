@@ -1,6 +1,6 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from "react";
-import type { ChatMessage, Garden, Settings, Step, Task, YardKind } from "@/types";
+import type { ChatMessage, Garden, Priority, Settings, Step, Task, YardKind } from "@/types";
 import { newId } from "./planner";
 import { advanceYard, DEF, earned, spent } from "./yard";
 
@@ -62,6 +62,8 @@ type Action =
   | { type: "setSteps"; id: string; steps: Step[] }
   | { type: "setToday"; ids: string[] }
   | { type: "reorder"; ids: string[] }
+  | { type: "moveTask"; id: string; beforeId: string | null; priority?: Priority }
+  | { type: "orderTasks"; ids: string[] }
   | { type: "yardPlace"; id: string; kind: YardKind; x: number; y: number }
   | { type: "yardMove"; id: string; x: number; y: number }
   | { type: "yardRemove"; id: string }
@@ -110,6 +112,18 @@ function base(s: State, a: Action): State {
       return { ...s, tasks: s.tasks.map((t) => t.id !== a.id ? t : { ...t, steps: t.steps.map((x) => x.id === a.stepId ? { ...x, done: !x.done } : x) }) };
     case "setSteps": return { ...s, tasks: s.tasks.map((t) => (t.id === a.id ? { ...t, steps: a.steps } : t)) };
     case "setToday": return { ...s, tasks: s.tasks.map((t) => ({ ...t, today: a.ids.includes(t.id) })) };
+    case "moveTask": {
+      const t = s.tasks.find((x) => x.id === a.id);
+      if (!t || a.beforeId === a.id) return s;
+      const moved = a.priority ? { ...t, priority: a.priority } : t;
+      const rest = s.tasks.filter((x) => x.id !== a.id);
+      const at = a.beforeId ? rest.findIndex((x) => x.id === a.beforeId) : -1;
+      return { ...s, tasks: at < 0 ? [...rest, moved] : [...rest.slice(0, at), moved, ...rest.slice(at)] };
+    }
+    case "orderTasks": { // put the listed tasks first, in this order; everything else keeps its place after them
+      const first = a.ids.map((id) => s.tasks.find((x) => x.id === id)).filter(Boolean) as Task[];
+      return { ...s, tasks: [...first, ...s.tasks.filter((x) => !a.ids.includes(x.id))] };
+    }
     case "reorder": return { ...s, tasks: s.tasks.map((t) => { const i = a.ids.indexOf(t.id); return i < 0 ? t : { ...t, rank: i }; }) };
     case "yardPlace": {
       const g = s.garden, def = DEF[a.kind];

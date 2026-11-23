@@ -18,6 +18,7 @@ const P: Record<string, string> = {
   trash: "M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13",
   clock: "M12 3a9 9 0 100 18 9 9 0 000-18zM12 7v5l3 2",
   garden: "M12 21v-8M12 13c0-4.5-3-7-8-7 0 4.5 3 7 8 7zM12 15c0-3.5 2.5-6 7-6 0 3.5-2.5 6-7 6z",
+  grip: "M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01",
   coffee: "M5 9h11v5a4 4 0 01-4 4H9a4 4 0 01-4-4zM16 10h2a2 2 0 010 4h-2M8 3v3M12 3v3",
 };
 export function Icon({ name, size = 20, className = "" }: { name: keyof typeof P | string; size?: number; className?: string }) {

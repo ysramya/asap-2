@@ -16,11 +16,11 @@ export function useCompleteTask() {
   };
 }
 
-export function TaskRow({ task, index, expandable = false }: { task: Task; index?: number; expandable?: boolean }) {
+export function TaskRow({ task, index, expandable = false, defaultOpen = false }: { task: Task; index?: number; expandable?: boolean; defaultOpen?: boolean }) {
   const { state, dispatch, toast } = useApp();
   const complete = useCompleteTask();
   const status = taskStatus(task, state.activeTaskId);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const [draft, setDraft] = useState<Step[] | null>(null);
   const doneSteps = task.steps.filter((s) => s.done).length;
 
