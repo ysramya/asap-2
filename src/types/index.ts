@@ -1,4 +1,11 @@
-export type Step = { id: string; text: string; minutes: number; done: boolean };
+export type Confidence = "High" | "Medium" | "Low";
+export type Step = {
+  id: string; text: string; minutes: number; done: boolean;
+  doneWhen?: string;   // what finished looks like
+  why?: string;        // why this step comes here
+  confidence?: Confidence; // how sure the estimate is
+  day?: string;        // ISO date when the user spreads the plan across the week
+};
 export type Priority = "high" | "medium" | "low";
 export type Task = {
   id: string;
@@ -12,6 +19,7 @@ export type Task = {
   doneAt?: number;
   steps: Step[];
   inbox?: boolean;
+  basis?: { by: "rules" | "model"; note: string }; // how the steps were produced
   rank?: number; // the user's own order within today's plan (lower first)
 };
 export type ChatMessage = {

@@ -96,40 +96,48 @@ export function startAssistSteps(title: string): Pick<Step, "text" | "minutes">[
   ];
 }
 
-export function suggestSteps(title: string): Pick<Step, "text" | "minutes">[] {
+type Raw = Pick<Step, "text" | "minutes"> & { doneWhen?: string; why?: string };
+export function suggestSteps(title: string): Raw[] {
   const t = title.toLowerCase();
+  if (/status update|update for|standup|stand-up/.test(t))
+    return [
+      { text: "List what you finished, started, and blocked since last update", minutes: 10, doneWhen: "A list exists with Done, In progress and Blocked, each with at least one item or “none”.", why: "An update built from concrete facts stays accurate and short." },
+      { text: "Note who needs to hear each item and what they need from it", minutes: 5, doneWhen: "Every item has a name or team next to it.", why: "It tells you what to keep and what to cut." },
+      { text: "Draft the update using three to five bullet points", minutes: 10, doneWhen: "Three to five bullets, each one sentence.", why: "Short updates get read." },
+      { text: "Cut any bullet that lacks a clear next step or purpose", minutes: 5, doneWhen: "Every remaining bullet says what happens next or why it matters.", why: "A last pass removes noise before you send." },
+    ];
   if (/portfolio/.test(t))
     return [
-      { text: "Open the portfolio file", minutes: 2 },
-      { text: "Write a two-sentence introduction", minutes: 8 },
-      { text: "Pick the strongest project to lead with", minutes: 10 },
-      { text: "Read it aloud once and fix what trips you up", minutes: 5 },
+      { text: "Open the portfolio file", minutes: 2, doneWhen: "The file is open and you can see the introduction section.", why: "Starting is the hardest part, so this step is only opening it." },
+      { text: "Write a two-sentence introduction", minutes: 8, doneWhen: "Two sentences saying who you are and what you make.", why: "A short draft is easier to improve than a blank page." },
+      { text: "Pick the strongest project to lead with", minutes: 10, doneWhen: "One project is chosen and placed first.", why: "Readers decide in the first few seconds." },
+      { text: "Read it aloud once and fix what trips you up", minutes: 5, doneWhen: "You read it through once without stumbling.", why: "Reading aloud catches what silent reading misses." },
     ];
   if (/interview/.test(t))
     return [
-      { text: "Re-read the role description and note the top three needs", minutes: 10 },
-      { text: "Write one story for each need", minutes: 20 },
-      { text: "Draft answers to “tell me about yourself”", minutes: 10 },
-      { text: "Write two questions to ask them", minutes: 5 },
+      { text: "Re-read the role description and note the top three needs", minutes: 10, doneWhen: "Three needs are written down.", why: "Your answers should speak to what they actually need." },
+      { text: "Write one story for each need", minutes: 20, doneWhen: "Three short stories, each with a result.", why: "Stories are easier to recall under pressure than lists." },
+      { text: "Draft an answer to “tell me about yourself”", minutes: 10, doneWhen: "A 60-second answer written out.", why: "It is almost always the first question." },
+      { text: "Write two questions to ask them", minutes: 5, doneWhen: "Two questions you genuinely want answered.", why: "It shows interest and helps you decide too." },
     ];
   if (/application|apply|submit/.test(t))
     return [
-      { text: "Gather the documents you need", minutes: 5 },
-      { text: "Fill in the form without perfecting anything", minutes: 10 },
-      { text: "Check each field once, then submit", minutes: 5 },
+      { text: "Gather the documents you need", minutes: 5, doneWhen: "Every required file is in one folder.", why: "Hunting for files mid-form is where applications stall." },
+      { text: "Fill in the form without perfecting anything", minutes: 10, doneWhen: "Every required field has an answer.", why: "A rough first pass is easier to polish." },
+      { text: "Check each field once, then submit", minutes: 5, doneWhen: "You have submitted and seen a confirmation.", why: "One careful pass is enough." },
     ];
   const base = estimateMinutes(title);
   return [
-    { text: "Define what finished looks like", minutes: 3 },
-    { text: "Gather what you need in one place", minutes: 5 },
-    { text: "Do the main piece without editing", minutes: Math.max(base - 8, 5) },
-    { text: "Review once and wrap up", minutes: 5 },
+    { text: "Define what finished looks like", minutes: 3, doneWhen: "You can describe the finished result in one sentence.", why: "A clear finish line stops a task from growing." },
+    { text: "Gather what you need in one place", minutes: 5, doneWhen: "Everything you need is open or within reach.", why: "Setup removes the reasons to stop midway." },
+    { text: "Do the main piece without editing", minutes: Math.max(base - 8, 5), doneWhen: "A rough version of the main piece exists.", why: "Getting it down first beats polishing as you go." },
+    { text: "Review once and wrap up", minutes: 5, doneWhen: "You have read it through once and fixed the obvious.", why: "One pass is enough to catch the big problems." },
   ];
 }
 
 export function stepsFor(title: string, kind: "breakdown" | "assist" = "breakdown"): Step[] {
-  const src = kind === "assist" ? startAssistSteps(title) : suggestSteps(title);
-  return src.map((s) => ({ id: uid(), text: s.text, minutes: s.minutes, done: false }));
+  const src: Raw[] = kind === "assist" ? startAssistSteps(title) : suggestSteps(title);
+  return src.map((s) => ({ id: uid(), text: s.text, minutes: s.minutes, done: false, doneWhen: s.doneWhen, why: s.why, confidence: "Medium" as const }));
 }
 
 export const PRIORITIES: Priority[] = ["high", "medium", "low"];

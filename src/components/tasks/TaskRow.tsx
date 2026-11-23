@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState } from "react";
 import { useApp } from "@/lib/store";
 import { Button, Checkbox, Meta, PriorityMark, PrioritySelect, ProjectLabel, cx } from "@/components/ui";
@@ -90,6 +91,7 @@ export function TaskRow({ task, index, expandable = false }: { task: Task; index
 
           <div className="flex flex-wrap items-center gap-2">
             {!draft && <Button size="sm" variant="ai" onClick={() => setDraft(stepsFor(task.title))}><Icon name="spark" size={16} />{task.steps.length ? "Re-suggest steps" : "Break it down"}</Button>}
+            <Link href={`/task?id=${task.id}`} className="inline-flex h-9 items-center rounded-[10px] border border-line px-3 text-sm font-semibold hover:bg-sunk">Open guided plan</Link>
             <Button size="sm" onClick={() => dispatch({ type: "update", id: task.id, patch: { today: !task.today } })} aria-pressed={task.today}>{task.today ? "In today's plan" : "Add to today"}</Button>
             <PrioritySelect compact value={task.priority} onChange={(p) => dispatch({ type: "update", id: task.id, patch: { priority: p } })} />
             <label className="flex items-center gap-2 text-sm text-muted">Due
