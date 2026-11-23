@@ -50,24 +50,24 @@
 }
 
 [data-theme="dark"] {
-  --bg: #15141c;
-  --surface: #1e1d27;
-  --surface-sunk: #191821;
-  --ink: #f4f0e8;
-  --muted: #a8a39a;
-  --line: #34323f;
-  --brand: #f4f0e8;
-  --nav: #1b1a26;
-  --brand-ink: #15141c;
+  --bg: #101412;
+  --surface: #181d1a;
+  --surface-sunk: #141916;
+  --ink: #f1efe8;
+  --muted: #a4a9a2;
+  --line: #2a312d;
+  --brand: #f1efe8;
+  --nav: #131815;
+  --brand-ink: #101412;
   --action: #6fa77c;
   --action-hover: #82b78e;
   --action-ink: #0f1a12;
-  --action-soft: #222d27;
+  --action-soft: #1f2b24;
   --ai: #6fa77c;
-  --ai-soft: #1f2a25;
+  --ai-soft: #1b2620;
   --ai-ink: #cfe3d3;
   --warm: #f2c6ad;
-  --warm-soft: #3a2f2c;
+  --warm-soft: #332a22;
   --focus-ring: #9cc5a4;
   --shadow-1: 0 1px 2px rgb(0 0 0 / 0.3);
   --shadow-2: 0 8px 24px -8px rgb(0 0 0 / 0.5);
@@ -190,10 +190,11 @@ h2, h3 { font-weight: 700; }
   --g-l0:#2f4d3a; --g-l1:#4b7b59; --g-l2:#86b08f; --g-stem:#4c7a58;
   --g-gr0:#3d6a4b; --g-gr1:#5a8c66; --g-gr2:#86b390;
   --g-peach:#f0b59c; --g-peach2:#df947a; --g-peachL:#f8d8c7; --g-ivory:#fbf8f2; --g-center:#c98a5e;
+  --g-wood:#a07c52; --g-wood2:#7d5f3e; --g-wood-hi:#c9a577; --g-roof:#46507d; --g-roof-hi:#6a76a8; --g-metal:#3a3f40; --g-metal2:#565c5e; --g-water:#9cc3c4; --g-water-hi:#cfe5e3; --g-flame:#f2a65a; --g-flame2:#f8d98a; --g-fence:#e8dec9; --g-fence-sh:#c2b49a; --g-stripe:rgba(255,255,255,.07);
   --g-indigo:#4a5486; --g-indigo2:#8d93b8; --g-soil:#7a6650; --g-shadow:#25301f;
 }
 [data-theme="dark"] .garden-svg {
-  --g-sky1:#1a1a2b; --g-sky2:#262338; --g-sky3:#43364a; --g-glow:#d99a86; --g-sun:#e8b9a0; --g-cloud:#8f88a8;
+  --g-sky1:#141c22; --g-sky2:#1f2830; --g-sky3:#3a3a40; --g-glow:#d99a86; --g-sun:#e8b9a0; --g-cloud:#8f88a8;
   --g-far:#2b3a3a; --g-far-t:#243332; --g-mid:#2d4339; --g-mid-t:#26392f; --g-mid2:#2f4a3c;
   --g-meadow1:#34553f; --g-meadow2:#264332;
   --g-path:#58504a; --g-path-hi:#6a6058; --g-path-edge:#463f3a; --g-stone:#756d63; --g-stone-hi:#9a9184;
@@ -201,6 +202,7 @@ h2, h3 { font-weight: 700; }
   --g-l0:#1d3227; --g-l1:#325742; --g-l2:#5b8a69; --g-stem:#4b7b58;
   --g-gr0:#2a4a37; --g-gr1:#3f6c51; --g-gr2:#64977a;
   --g-peach:#eaa98f; --g-peach2:#d98a70; --g-peachL:#f1c9b6; --g-ivory:#efe8dc; --g-center:#c98a5e;
+  --g-wood:#7b6149; --g-wood2:#5a4532; --g-wood-hi:#9a7e5d; --g-roof:#5a6699; --g-roof-hi:#7f8bbd; --g-metal:#2b3032; --g-metal2:#454b4d; --g-water:#3f6b73; --g-water-hi:#6fa0a6; --g-flame:#f2a65a; --g-flame2:#f8d98a; --g-fence:#6f6558; --g-fence-sh:#4d453b; --g-stripe:rgba(255,255,255,.035);
   --g-indigo:#7d89c9; --g-indigo2:#aab0d8; --g-soil:#5d4d3d; --g-shadow:#0c100d;
 }
 /* Every swaying part pivots at its own base (local origin) and nests in its parent.
@@ -232,5 +234,16 @@ h2, h3 { font-weight: 700; }
 @keyframes g-tree { from { transform: scale(.55, .06); opacity: 0; } 18% { opacity: 1; } to { transform: scale(1, 1); opacity: 1; } }
 .garden-svg .fol { animation: g-fol 3.4s cubic-bezier(.22,.61,.36,1) 2.4s both; }
 @keyframes g-fol { from { transform: scale(.15); opacity: 0; } 50% { opacity: 1; } to { transform: scale(1); opacity: 1; } }
+.garden-svg .glow2 { animation: glow2 5.5s ease-in-out infinite; }
+@keyframes glow2 { 0%, 100% { opacity: .22; } 50% { opacity: .42; } }
+.garden-svg .flame { transform-origin: 0 0; animation: flame 1.7s ease-in-out infinite alternate; }
+@keyframes flame { from { transform: scale(1, .92) skewX(-2deg); } to { transform: scale(.94, 1.08) skewX(2deg); } }
+.garden-svg .smoke { animation: smoke 7s ease-out var(--sd, 0s) infinite; opacity: 0; }
+@keyframes smoke { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: .45; } 100% { transform: translateY(-28px) translateX(6px); opacity: 0; } }
+.garden-svg .ripple { animation: ripple 7s ease-out infinite; }
+@keyframes ripple { 0% { transform: scale(.3); opacity: .7; } 100% { transform: scale(1.5); opacity: 0; } }
+.garden-svg .place { animation: g-place 1.4s cubic-bezier(.22,.61,.36,1) both; }
+@keyframes g-place { from { transform: translateY(-18px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.garden-svg[data-still] * { animation: none !important; }
 .garden-svg[data-active="false"] * { animation-play-state: paused !important; }
 @media (prefers-reduced-motion: reduce) { .garden-svg *, .garden-svg { animation: none !important; } }

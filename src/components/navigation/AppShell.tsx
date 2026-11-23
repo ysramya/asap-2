@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useApp } from "@/lib/store";
 import { useMedia } from "@/hooks/useMedia";
-import { Logo, Overlay, cx } from "@/components/ui";
+import { Logo, Mark, Overlay, cx } from "@/components/ui";
 import { Icon } from "@/components/ui/Icon";
 import { Toasts } from "@/components/ui/Toasts";
 import { AskPanel } from "@/components/assistant/AskPanel";
@@ -15,6 +15,7 @@ const NAV = [
   { href: "/work", label: "My Tasks", icon: "work" },
   { href: "/planner", label: "Planner", icon: "clock" },
   { href: "/focus", label: "Focus", icon: "focus" },
+  { href: "/garden", label: "Garden", icon: "garden" },
 ] as const;
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -26,6 +27,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const settingsPage = path === "/settings";
   const onAskPage = path === "/ask";
   const showPanel = wide && state.settings.askOpen && !focusMode && !onAskPage;
+  const nav = NAV.filter((n) => n.href !== "/garden" || state.settings.garden !== false);
   const isActive = (h: string) => (h === "/" ? path === "/" : path.startsWith(h));
 
   if (!state.hydrated)
@@ -39,9 +41,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-dvh md:pl-[72px] lg:pl-[248px]">
       {/* Sidebar: icons-only on tablet, full on desktop */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden flex-col bg-nav text-[#f4f0e8] md:flex md:w-[72px] lg:w-[248px]">
-        <div className="flex h-20 items-center px-5 lg:px-6"><span className="hidden lg:block"><Logo light /></span><span className="lg:hidden"><Logo light /></span></div>
+        <div className="flex h-20 items-center px-5 lg:px-6"><span className="hidden lg:block"><Logo light /></span><span className="lg:hidden"><Mark size={30} tone="dark" /></span></div>
         <nav aria-label="Primary" className="flex flex-col gap-1 px-3 lg:px-4">
-          {NAV.map((n) => (
+          {nav.map((n) => (
             <Link key={n.href} href={n.href} aria-current={isActive(n.href) ? "page" : undefined} title={n.label}
               className={cx("flex h-11 items-center gap-3 rounded-[10px] px-3 text-[15px] font-semibold transition-colors duration-[160ms]",
                 isActive(n.href) ? "bg-[#dce8d9] text-[#252044]" : "text-[#e6e2d8] hover:bg-white/10")}>
@@ -100,8 +102,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </Overlay>
 
       {/* Mobile bottom nav */}
-      <nav aria-label="Primary" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden">
-        {NAV.map((n) => (
+      <nav aria-label="Primary" style={{ gridTemplateColumns: `repeat(${nav.length}, minmax(0, 1fr))` }} className="fixed inset-x-0 bottom-0 z-30 grid border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden">
+        {nav.map((n) => (
           <Link key={n.href} href={n.href} aria-current={isActive(n.href) ? "page" : undefined}
             className={cx("flex h-16 flex-col items-center justify-center gap-0.5 text-xs font-bold", isActive(n.href) ? "text-action" : "text-muted")}>
             <Icon name={n.icon} /><span>{n.label}</span>

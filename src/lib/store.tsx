@@ -1,7 +1,8 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from "react";
-import type { ChatMessage, Garden, Settings, Step, Task } from "@/types";
+import type { ChatMessage, Garden, Settings, Step, Task, YardKind } from "@/types";
 import { newId } from "./planner";
+import { advanceYard, DEF, earned, spent } from "./yard";
 
 type State = {
   hydrated: boolean;
@@ -13,7 +14,7 @@ type State = {
   garden: Garden;
 };
 
-const emptyGarden = (): Garden => ({ plants: {}, order: [], trees: [], ferns: 0, lastSeen: Date.now() });
+const emptyGarden = (): Garden => ({ plants: {}, order: [], trees: [], ferns: 0, lastSeen: Date.now(), yard: [] });
 const DAY = 86400000;
 
 /** Growth is additive. Nothing here ever removes or downgrades anything. */
@@ -30,15 +31,15 @@ function growTrees(g: Garden, tasks: Task[], project: string): Garden {
 
 const today = () => new Date().toISOString().slice(0, 10);
 const mk = (title: string, project: string, minutes: number, extra: Partial<Task> = {}): Task => ({
-  id: newId(), title, project, minutes, priority: "normal", today: false, done: false, steps: [], ...extra,
+  id: newId(), title, project, minutes, priority: "medium", today: false, done: false, steps: [], ...extra,
 });
 
 export const sampleTasks = (): Task[] => [
   mk("Finish portfolio introduction", "Portfolio", 15, { today: true, priority: "high" }),
-  mk("Prepare for interview", "Career", 45, { today: true, due: today() }),
+  mk("Prepare for interview", "Career", 45, { today: true, due: today(), priority: "high" }),
   mk("Submit job application", "Career", 20, { today: true }),
   mk("Email the recruiter", "Career", 10),
-  mk("Book dentist appointment", "Personal", 10),
+  mk("Book dentist appointment", "Personal", 10, { priority: "low" }),
 ];
 
 const initial: State = {
@@ -60,6 +61,10 @@ type Action =
   | { type: "toggleStep"; id: string; stepId: string }
   | { type: "setSteps"; id: string; steps: Step[] }
   | { type: "setToday"; ids: string[] }
+  | { type: "reorder"; ids: string[] }
+  | { type: "yardPlace"; id: string; kind: YardKind; x: number; y: number }
+  | { type: "yardMove"; id: string; x: number; y: number }
+  | { type: "yardRemove"; id: string }
   | { type: "settings"; patch: Partial<Settings> }
   | { type: "chat"; messages: ChatMessage[] }
   | { type: "patchMessage"; id: string; patch: Partial<ChatMessage> }
@@ -73,7 +78,11 @@ function reducer(s: State, a: Action): State {
   if (a.type === "toggleStep") { const t = n.tasks.find((x) => x.id === a.id); if (t?.steps.find((x) => x.id === a.stepId)?.done) g = grow(g, a.id, 2); }
   if (a.type === "toggle") {
     const was = s.tasks.find((x) => x.id === a.id), t = n.tasks.find((x) => x.id === a.id);
-    if (t?.done && !was?.done) g = growTrees(grow(g, t.id, 3), n.tasks, t.project);
+    if (t?.done && !was?.done) {
+      const before = g.plants[t.id] ?? 0;
+      g = growTrees(grow(g, t.id, 3), n.tasks, t.project);
+      if (before < 3) g = { ...g, yard: advanceYard(g.yard) }; // each newly completed task grows the yard once
+    }
   }
   return g === n.garden ? n : { ...n, garden: g };
 }
@@ -82,12 +91,13 @@ function base(s: State, a: Action): State {
   switch (a.type) {
     case "hydrate": {
       const m = { ...s, ...a.state, hydrated: true };
+      m.tasks = m.tasks.map((t) => ((t.priority as string) === "normal" ? { ...t, priority: "medium" } : t)); // older saves
       let g = a.state.garden;
       if (!g) { // first run with the garden: seed it from work already done
         g = emptyGarden();
         for (const t of m.tasks) { if (t.done) g = grow(g, t.id, 3); else if (t.steps.some((x) => x.done)) g = grow(g, t.id, 2); }
-      } else if (Date.now() - g.lastSeen > 3 * DAY) g = { ...g, ferns: g.ferns + 1 }; // gentle new growth on return
-      return { ...m, garden: { ...g, lastSeen: Date.now() } };
+      }
+      return { ...m, garden: { ...g, yard: g.yard ?? [], lastSeen: Date.now() } };
     }
     case "addTasks": return { ...s, tasks: [...a.tasks, ...s.tasks] };
     case "update": return { ...s, tasks: s.tasks.map((t) => (t.id === a.id ? { ...t, ...a.patch } : t)) };
@@ -100,6 +110,14 @@ function base(s: State, a: Action): State {
       return { ...s, tasks: s.tasks.map((t) => t.id !== a.id ? t : { ...t, steps: t.steps.map((x) => x.id === a.stepId ? { ...x, done: !x.done } : x) }) };
     case "setSteps": return { ...s, tasks: s.tasks.map((t) => (t.id === a.id ? { ...t, steps: a.steps } : t)) };
     case "setToday": return { ...s, tasks: s.tasks.map((t) => ({ ...t, today: a.ids.includes(t.id) })) };
+    case "reorder": return { ...s, tasks: s.tasks.map((t) => { const i = a.ids.indexOf(t.id); return i < 0 ? t : { ...t, rank: i }; }) };
+    case "yardPlace": {
+      const g = s.garden, def = DEF[a.kind];
+      if (!def || earned(g) - spent(g) < def.cost || g.yard.some((y) => y.id === a.id)) return s;
+      return { ...s, garden: { ...g, yard: [...g.yard, { id: a.id, kind: a.kind, x: a.x, y: a.y, growth: 0 }] } };
+    }
+    case "yardMove": return { ...s, garden: { ...s.garden, yard: s.garden.yard.map((y) => (y.id === a.id ? { ...y, x: a.x, y: a.y } : y)) } };
+    case "yardRemove": return { ...s, garden: { ...s.garden, yard: s.garden.yard.filter((y) => y.id !== a.id) } }; // seeds return to the pocket
     case "settings": return { ...s, settings: { ...s.settings, ...a.patch } };
     case "chat": return { ...s, chat: [...s.chat, ...a.messages] };
     case "patchMessage": return { ...s, chat: s.chat.map((m) => (m.id === a.id ? { ...m, ...a.patch } : m)) };

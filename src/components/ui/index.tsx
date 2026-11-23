@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useRef } from "react";
 import { Icon } from "./Icon";
+import type { Priority } from "@/types";
+import { PRIORITIES, PRIORITY_LABEL } from "@/lib/planner";
 
 export function cx(...a: (string | false | null | undefined)[]) { return a.filter(Boolean).join(" "); }
 
@@ -45,9 +47,24 @@ export function Meta({ children, icon }: { children: React.ReactNode; icon?: str
 export function ProjectLabel({ name }: { name: string }) {
   return <span className="inline-flex items-center gap-1.5 text-sm text-muted"><span className="size-1.5 rounded-full bg-action" aria-hidden />{name}</span>;
 }
-export function PriorityMark({ high }: { high: boolean }) {
-  if (!high) return null;
-  return <span className="rounded-md bg-warm-soft px-1.5 py-0.5 text-xs font-bold text-ink">Priority</span>;
+const PRIO_TONE: Record<Priority, string> = { high: "bg-warm-soft", medium: "bg-action-soft", low: "bg-sunk" };
+const PRIO_DOT: Record<Priority, string> = { high: "bg-[#df947a]", medium: "bg-action", low: "bg-muted/60" };
+export function PriorityMark({ level }: { level: Priority }) {
+  return <span className={cx("inline-flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-xs font-bold text-ink", PRIO_TONE[level])}><span className={cx("size-1.5 rounded-full", PRIO_DOT[level])} aria-hidden />{PRIORITY_LABEL[level]}</span>;
+}
+/** High / Medium / Low. `suggested` marks the AI's pick; choosing anything else is always allowed. */
+export function PrioritySelect({ value, onChange, label = "Priority", suggested, compact }: { value: Priority; onChange: (p: Priority) => void; label?: string; suggested?: Priority; compact?: boolean }) {
+  return (
+    <div role="radiogroup" aria-label={label} className="inline-flex rounded-[10px] border border-line bg-sunk p-0.5">
+      {PRIORITIES.map((p) => (
+        <button key={p} type="button" role="radio" aria-checked={value === p} onClick={() => onChange(p)}
+          className={cx("inline-flex items-center gap-1.5 rounded-[8px] px-2.5 text-sm font-semibold transition-colors", compact ? "h-9" : "h-10",
+            value === p ? cx("text-ink shadow-[var(--shadow-1)]", PRIO_TONE[p] === "bg-sunk" ? "bg-surface" : PRIO_TONE[p], "ring-1 ring-line") : "text-muted hover:text-ink")}>
+          <span className={cx("size-2 rounded-full", PRIO_DOT[p])} aria-hidden />{PRIORITY_LABEL[p]}{suggested === p && <Icon name="spark" size={12} className="text-ai" />}
+        </button>
+      ))}
+    </div>
+  );
 }
 
 export function Card({ className, ...p }: React.HTMLAttributes<HTMLDivElement>) {

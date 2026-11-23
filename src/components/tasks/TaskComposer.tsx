@@ -1,11 +1,11 @@
 "use client";
 import { useState } from "react";
 import { useApp } from "@/lib/store";
-import { Button, cx } from "@/components/ui";
+import { Button, PrioritySelect, cx } from "@/components/ui";
 import { Icon } from "@/components/ui/Icon";
 import { AI_NOTE } from "@/lib/ai";
-import { estimateMinutes, guessProject, newId, projectsOf, stepsFor } from "@/lib/planner";
-import type { Step } from "@/types";
+import { estimateMinutes, guessProject, newId, projectsOf, stepsFor, suggestPriority } from "@/lib/planner";
+import type { Priority, Step } from "@/types";
 
 const field = "h-11 rounded-[10px] border border-line bg-surface px-3 text-[15px]";
 
@@ -14,21 +14,23 @@ export function TaskComposer({ addToToday = false, id = "composer" }: { addToTod
   const { state, dispatch, toast, openDump } = useApp();
   const [title, setTitle] = useState("");
   const [due, setDue] = useState("");
-  const [high, setHigh] = useState(false);
+  const [prio, setPrio] = useState<Priority | null>(null); // null = follow the AI suggestion
   const [project, setProject] = useState<string | null>(null);
   const [today, setToday] = useState(addToToday);
   const [draft, setDraft] = useState<Step[] | null>(null);
 
   const clean = title.trim();
   const chosen = project ?? (clean ? guessProject(clean) : "Inbox");
+  const sug = suggestPriority(clean, due || undefined);
+  const level = prio ?? sug.level;
 
-  const reset = () => { setTitle(""); setDue(""); setHigh(false); setProject(null); setToday(addToToday); setDraft(null); };
+  const reset = () => { setTitle(""); setDue(""); setPrio(null); setProject(null); setToday(addToToday); setDraft(null); };
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!clean) return;
     dispatch({ type: "addTasks", tasks: [{
       id: newId(), title: clean[0].toUpperCase() + clean.slice(1), project: chosen, minutes: draft ? Math.max(5, draft.reduce((a, s) => a + s.minutes, 0)) : estimateMinutes(clean),
-      priority: high ? "high" : "normal", due: due || undefined, today, done: false, steps: draft ?? [],
+      priority: level, due: due || undefined, today, done: false, steps: draft ?? [],
     }] });
     toast(today ? "Added to My Day" : "Added to My Tasks");
     reset();
@@ -51,10 +53,10 @@ export function TaskComposer({ addToToday = false, id = "composer" }: { addToTod
             {projectsOf(state.tasks).map((p) => <option key={p}>{p}</option>)}
           </select>
         </label>
-        <button type="button" aria-pressed={high} onClick={() => setHigh((h) => !h)}
-          className={cx("h-11 rounded-[10px] border px-3 text-sm font-semibold", high ? "border-action bg-action-soft text-ink" : "border-line text-muted hover:bg-sunk")}>
-          {high ? "Priority ✓" : "Mark priority"}
-        </button>
+        <div className="flex flex-col gap-1">
+          <PrioritySelect value={level} onChange={setPrio} suggested={clean && prio === null ? sug.level : undefined} />
+          {clean && <p className="text-xs text-muted">{prio === null ? `AI suggests ${sug.level} because ${sug.reason}. Change it any time.` : "Set by you."}</p>}
+        </div>
         <button type="button" aria-pressed={today} onClick={() => setToday((t) => !t)}
           className={cx("h-11 rounded-[10px] border px-3 text-sm font-semibold", today ? "border-action bg-action-soft text-ink" : "border-line text-muted hover:bg-sunk")}>
           {today ? "In My Day ✓" : "Add to My Day"}

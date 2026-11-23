@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useApp } from "@/lib/store";
-import { formatMinutes, pickToday } from "@/lib/planner";
+import { formatMinutes, pickToday, planOrder } from "@/lib/planner";
 import { Button, Mark } from "@/components/ui";
 import { Icon } from "@/components/ui/Icon";
 import { TaskComposer } from "@/components/tasks/TaskComposer";
@@ -20,7 +20,7 @@ export default function Home() {
   const dark = state.settings.theme === "dark";
 
   const open = state.tasks.filter((t) => !t.done);
-  const day = state.tasks.filter((t) => t.today && (!t.done || sameDay(t.doneAt)));
+  const day = planOrder(state.tasks.filter((t) => t.today && (!t.done || sameDay(t.doneAt))));
   const dayOpen = day.filter((t) => !t.done);
   const shown = all ? day : day.slice(0, LIMIT);
   const next = dayOpen[0] ?? pickToday(state.tasks, 1)[0];
@@ -92,7 +92,7 @@ export default function Home() {
       <section aria-label="Where to go next" className="grid gap-3 sm:grid-cols-3">
         {[
           { href: "/work", n: "1", t: "My Tasks", d: `${open.length} open across ${projects} project${projects === 1 ? "" : "s"}. Create, edit, filter and search everything.` },
-          { href: "/planner", n: "2", t: "Planner", d: "Pick what belongs in today, estimate the workload, and ask AI for a suggestion." },
+          { href: "/planner", n: "2", t: "Planner", d: "Choose what goes in today, put it in order, and see when you will finish. AI can suggest an order; you decide." },
           { href: "/focus", n: "3", t: "Focus", d: "Start a timer or Pomodoro and work through AI-made steps one at a time." },
         ].map((c) => (
           <Link key={c.href} href={c.href} onClick={c.href === "/focus" && next ? () => dispatch({ type: "active", id: next.id }) : undefined}
@@ -104,9 +104,9 @@ export default function Home() {
         ))}
       </section>
       {state.settings.garden !== false && (
-        <Link href="/garden" aria-label="Open your garden" className="group block overflow-hidden rounded-[16px] border border-line bg-surface transition-shadow hover:shadow-[var(--shadow-2)]">
+        <Link href="/garden" aria-label="Open your backyard" className="group block overflow-hidden rounded-[16px] border border-line bg-surface transition-shadow hover:shadow-[var(--shadow-2)]">
           <span className="block aspect-[16/9] w-full sm:aspect-[21/9]"><GardenArt garden={state.garden} /></span>
-          <span className="flex items-center gap-3 px-4 py-3"><span className="min-w-0 flex-1"><span className="eyebrow">Your garden</span><span className="mt-0.5 block text-[15px]">{gardenCaption(state.garden)}</span></span><Icon name="arrow" size={16} className="text-muted" /></span>
+          <span className="flex items-center gap-3 px-4 py-3"><span className="min-w-0 flex-1"><span className="eyebrow">Your backyard</span><span className="mt-0.5 block text-[15px]">{gardenCaption(state.garden)}</span></span><Icon name="arrow" size={16} className="text-muted" /></span>
         </Link>
       )}
       <p className="text-center text-sm text-muted">Create → Organize → Plan → Focus → Complete. The AI Coach is on the side whenever you want a hand.</p>

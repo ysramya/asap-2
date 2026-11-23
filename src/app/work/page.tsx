@@ -4,7 +4,7 @@ import { useApp } from "@/lib/store";
 import { Button, EmptyState, cx } from "@/components/ui";
 import { Icon } from "@/components/ui/Icon";
 import { TaskComposer } from "@/components/tasks/TaskComposer";
-import { projectsOf, taskStatus } from "@/lib/planner";
+import { aiOrder, projectsOf, taskStatus } from "@/lib/planner";
 import type { Task } from "@/types";
 import { TaskRow } from "@/components/tasks/TaskRow";
 
@@ -26,9 +26,9 @@ export default function Work() {
   const match = (t: Task) =>
     (!q || t.title.toLowerCase().includes(q.toLowerCase())) &&
     (project === "All" || t.project === project) &&
-    (prio === "All" || (prio === "Priority" ? t.priority === "high" : t.priority !== "high")) &&
+    (prio === "All" || t.priority === prio.toLowerCase()) &&
     (status === "All" || taskStatus(t, state.activeTaskId) === status);
-  const open = state.tasks.filter((t) => !t.done && match(t));
+  const open = aiOrder(state.tasks.filter((t) => !t.done && match(t)));
   const done = state.tasks.filter((t) => t.done && match(t));
 
   return (
@@ -58,7 +58,7 @@ export default function Work() {
       </div>
 
       <div className="flex flex-wrap gap-2" role="group" aria-label="Filters">
-        {([["Project", project, setProject, ["All", ...projectsOf(state.tasks)]], ["Status", status, setStatus, ["All", "To do", "In progress"]], ["Priority", prio, setPrio, ["All", "Priority", "Normal"]]] as const).map(([label, val, set, opts]) => (
+        {([["Project", project, setProject, ["All", ...projectsOf(state.tasks)]], ["Status", status, setStatus, ["All", "To do", "In progress"]], ["Priority", prio, setPrio, ["All", "High", "Medium", "Low"]]] as const).map(([label, val, set, opts]) => (
           <label key={label} className="flex items-center gap-2 text-sm text-muted">{label}
             <select value={val} onChange={(e) => set(e.target.value)} className="h-10 rounded-[10px] border border-line bg-surface px-2 text-[15px] text-ink">
               {opts.map((o) => <option key={o}>{o}</option>)}

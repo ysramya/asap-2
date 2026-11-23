@@ -1,5 +1,5 @@
 export type Step = { id: string; text: string; minutes: number; done: boolean };
-export type Priority = "high" | "normal";
+export type Priority = "high" | "medium" | "low";
 export type Task = {
   id: string;
   title: string;
@@ -12,6 +12,7 @@ export type Task = {
   doneAt?: number;
   steps: Step[];
   inbox?: boolean;
+  rank?: number; // the user's own order within today's plan (lower first)
 };
 export type ChatMessage = {
   id: string;
@@ -37,5 +38,8 @@ export type Settings = {
   garden?: boolean; // optional garden; undefined means on
 };
 /** Cumulative and permanent. Stages only ever move forward. 1 seed, 2 seedling, 3 bloom. */
-export type Garden = { plants: Record<string, 1 | 2 | 3>; order: string[]; trees: string[]; ferns: number; lastSeen: number };
+export type YardKind = "flower" | "shrub" | "creeper" | "tree" | "bench" | "lantern" | "planter" | "table" | "firepit" | "bbq" | "pond" | "gazebo";
+/** growth only applies to living kinds and only ever increases. */
+export type YardItem = { id: string; kind: YardKind; x: number; y: number; growth: number };
+export type Garden = { plants: Record<string, 1 | 2 | 3>; order: string[]; trees: string[]; ferns: number; lastSeen: number; yard: YardItem[] };
 export type DumpItem = { id: string; title: string; project: string; keep: boolean; due?: string };

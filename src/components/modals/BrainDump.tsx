@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useApp } from "@/lib/store";
 import { Button, Overlay, cx } from "@/components/ui";
 import { Icon } from "@/components/ui/Icon";
-import { estimateMinutes, newId, splitBrainDump } from "@/lib/planner";
+import { estimateMinutes, newId, splitBrainDump, suggestPriority } from "@/lib/planner";
 import { AI_NOTE } from "@/lib/ai";
 import type { DumpItem, Task } from "@/types";
 
@@ -30,7 +30,7 @@ function DumpInner() {
   const save = () => {
     const tasks: Task[] = kept.map((i) => ({
       id: newId(), title: i.title.trim(), project: i.project || "Inbox", minutes: estimateMinutes(i.title),
-      priority: "normal", due: i.due, today: false, done: false, steps: [],
+      priority: suggestPriority(i.title, i.due).level, due: i.due, today: false, done: false, steps: [],
     }));
     dispatch({ type: "addTasks", tasks });
     toast(`${tasks.length} task${tasks.length === 1 ? "" : "s"} added`);

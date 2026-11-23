@@ -3,9 +3,11 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import type { Garden as G } from "@/types";
 import { useApp } from "@/lib/store";
+import { DEF, LAWN, depthScale, isLiving, stageWord, wallet } from "@/lib/yard";
+import type { YardKind } from "@/types";
 
 /**
- * An illustrated, layered landscape with one coherent breeze.
+ * An illustrated, layered backyard with one coherent breeze.
  *
  * Artwork is generated from seeded randomness so every tree, leaf cluster and
  * flower is unique but stable between renders. Movement is a single wind model
@@ -228,21 +230,6 @@ function silTree(r: R, x: number, y: number, h: number, fill: string, key: strin
 }
 
 /* ───────────── ground, path, grasses ───────────── */
-const pathCenter = (y: number) => { const t = (y - 412) / 238; return 612 + 95 * Math.sin(t * 3.6) * Math.min(1, t * 2.2) - 40 * t; };
-const pathHalf = (y: number) => { const t = Math.max(0, (y - 412) / 238); return 8 + t ** 1.15 * 135; };
-const onPath = (x: number, y: number, pad = 1) => y > 412 && Math.abs(x - pathCenter(y)) < pathHalf(y) * pad;
-const depthScale = (y: number) => 0.5 + ((y - 420) / 220) * 0.78;
-
-function pathShapes() {
-  const L: Pt[] = [], Rr: Pt[] = [], C: Pt[] = [], Cl: Pt[] = [];
-  for (let y = 412; y <= 656; y += 14) {
-    const c = pathCenter(y), h = pathHalf(y);
-    L.push([c - h, y]); Rr.push([c + h, y]); Cl.push([c - h * 0.5, y]); C.push([c + h * 0.5, y]);
-  }
-  const ring = (a: Pt[], b: Pt[]) => `M${pt(a[0])}${through(a)}L${pt(b[b.length - 1])}${through([...b].reverse())}Z`;
-  return { body: ring(L, Rr), core: ring(Cl, C), edgeL: `M${pt(L[0])}${through(L)}`, edgeR: `M${pt(Rr[0])}${through(Rr)}` };
-}
-
 function tuft(r: R, h: number, blades: number, spread: number) {
   let d = "";
   for (let i = 0; i < blades; i++) {
@@ -365,94 +352,283 @@ function Plant({ stage, idx, x }: { stage: number; idx: number; x: number }) {
   );
 }
 
-function Fern({ idx, x }: { idx: number; x: number }) {
-  const r = rng(idx * 4177 + 9);
-  const fronds: ReactNode[] = [];
-  for (let k = 0; k < 7; k++) {
-    const ang = -64 + k * 21 + between(r, -5, 5), len = between(r, 46, 70) * (1 - Math.abs(k - 3) * 0.06);
-    const s = Math.sin(ang * rad), c = Math.cos(ang * rad);
-    const cx = s * len * 0.55, cy = -c * len * 0.72, ex = s * len * 0.92 + len * 0.08, ey = -c * len * 0.8 + len * 0.14 * Math.abs(s);
-    let a = "", b = "";
-    for (let j = 1; j <= 9; j++) {
-      const t = j / 10, px = 2 * (1 - t) * t * cx + t * t * ex, py = 2 * (1 - t) * t * cy + t * t * ey;
-      const dx = 2 * (1 - t) * cx + 2 * t * (ex - cx), dy = 2 * (1 - t) * cy + 2 * t * (ey - cy);
-      const tang = Math.atan2(dx, -dy) / rad, L = len * (0.27 - 0.2 * t);
-      a += leaf(px, py, tang - 58, L, L * 0.3, 1); b += leaf(px, py, tang + 58, L, L * 0.3, -1);
-    }
-    fronds.push(
-      <g key={k} className="w" style={wind(r, 2.4, between(r, 6, 9), x)}>
-        <path d={`M0 0Q${f1(cx)} ${f1(cy)} ${f1(ex)} ${f1(ey)}`} stroke="var(--g-l1)" strokeWidth="1.4" fill="none" strokeLinecap="round" />
-        <path d={a} fill="var(--g-l1)" /><path d={b} fill="var(--g-l2)" />
-      </g>,
+/* ───────────── yard items ───────────── */
+const rect = (x: number, y: number, w: number, h: number) => `M${x} ${y}h${w}v${h}h${-w}Z`;
+const Shadow = ({ rx, ry = 6 }: { rx: number; ry?: number }) => <ellipse cx="0" cy="2" rx={rx} ry={ry} fill="var(--g-shadow)" opacity=".22" />;
+
+function Gazebo() {
+  let balus = "";
+  for (let x = -47; x <= 47; x += 8) balus += rect(x - 1, -31, 2, 21);
+  return (
+    <g>
+      <Shadow rx={88} ry={10} />
+      <path d="M-68 0L68 0L62 -9L-62 -9Z" fill="var(--g-wood2)" />
+      <path d="M-62 -9L62 -9L58 -12L-58 -12Z" fill="var(--g-wood-hi)" />
+      <path d={rect(-50, -80, 100, 68)} fill="var(--g-shadow)" opacity=".2" />
+      {[-52, -18, 18, 52].map((x) => <path key={x} d={rect(x - 3, -82, 6, 72)} fill="var(--g-wood)" />)}
+      <path d={rect(-52, -33, 104, 3) + rect(-52, -12, 104, 2)} fill="var(--g-wood2)" />
+      <path d={balus} fill="var(--g-wood2)" />
+      <path d="M-84 -82L0 -136L84 -82Q0 -72 -84 -82Z" fill="var(--g-roof)" />
+      <path d="M0 -136L84 -82Q42 -77 0 -78Z" fill="var(--g-roof-hi)" opacity=".5" />
+      <path d="M-40 -108L-30 -80M-20 -122L-14 -78M20 -122L14 -78M40 -108L30 -80" stroke="var(--g-shadow)" strokeWidth=".9" opacity=".3" fill="none" />
+      <path d="M-84 -82Q0 -72 84 -82L78 -78Q0 -68 -78 -78Z" fill="var(--g-shadow)" opacity=".35" />
+      <path d="M-2 -136L0 -150L2 -136Z" fill="var(--g-wood2)" /><circle cy="-150" r="2.6" fill="var(--g-wood-hi)" />
+      <g transform="translate(0 -76)"><g className="w" style={{ "--a": 3, "--ta": "6.5s", "--da": "-2s", "--tb": "10s", "--db": "-4s" } as Css}>
+        <path d="M0 0V14" stroke="var(--g-metal)" strokeWidth="1" />
+        <circle cy="26" r="15" fill="var(--g-glow)" opacity=".4" className="glow2" />
+        <path d="M-5 14h10l-1.5 15h-7Z" fill="var(--g-metal)" /><path d="M-3 17h6l-1 9h-4Z" fill="var(--g-flame2)" />
+      </g></g>
+    </g>
+  );
+}
+function Bench() {
+  return (
+    <g>
+      <Shadow rx={44} />
+      <path d={rect(-31, -14, 4, 14) + rect(27, -14, 4, 14)} fill="var(--g-wood2)" />
+      <path d={rect(-33, -42, 3, 28) + rect(30, -42, 3, 28)} fill="var(--g-wood2)" />
+      <path d={rect(-33, -41, 66, 5) + rect(-33, -33, 66, 5) + rect(-33, -25, 66, 5)} fill="var(--g-wood)" />
+      <path d={rect(-38, -18, 76, 5)} fill="var(--g-wood-hi)" />
+      <path d={rect(-38, -13, 76, 2)} fill="var(--g-shadow)" opacity=".3" />
+      <path d={rect(-38, -28, 6, 3) + rect(32, -28, 6, 3)} fill="var(--g-wood2)" />
+    </g>
+  );
+}
+function Bbq() {
+  return (
+    <g>
+      <Shadow rx={30} />
+      <path d="M-9 -26L-17 0M9 -26L17 0M0 -26L0 -3" stroke="var(--g-metal)" strokeWidth="2.4" strokeLinecap="round" />
+      <path d={rect(21, -28, 17, 3) + rect(35, -26, 2, 24)} fill="var(--g-wood2)" />
+      <path d="M-21 -30Q0 -2 21 -30Z" fill="var(--g-metal)" />
+      <ellipse cy="-30" rx="17" ry="2.6" fill="var(--g-flame)" opacity=".85" className="glow2" />
+      <g transform="rotate(-13 -21 -31)"><path d="M-22 -31Q0 -58 22 -31Z" fill="var(--g-metal2)" /><path d="M-8 -50Q0 -54 8 -50" stroke="var(--g-ivory)" strokeWidth="1" opacity=".3" fill="none" /><path d={rect(-4, -56, 8, 3)} fill="var(--g-wood2)" /></g>
+      {[0, 1, 2].map((i) => <path key={i} className="smoke" style={{ "--sd": `${i * 2.6}s` } as Css} d={`M${i * 5 - 5} -50c-6 -8 6 -14 0 -24`} stroke="var(--g-cloud)" strokeWidth="2.2" strokeLinecap="round" fill="none" />)}
+    </g>
+  );
+}
+function FirePit() {
+  const r = rng(5);
+  let ring = "";
+  for (let i = 0; i < 11; i++) { const t = (i / 11) * Math.PI * 2; ring += blob(Math.cos(t) * 26, -5 + Math.sin(t) * 8.5, 7, 4.8, r, 7, 0.12); }
+  return (
+    <g>
+      <Shadow rx={36} ry={9} />
+      <ellipse cy="-5" rx="22" ry="7" fill="var(--g-metal)" />
+      <ellipse cy="-30" rx="46" ry="22" fill="var(--g-flame)" opacity=".14" className="glow2" />
+      <g transform="translate(0 -6)">
+        <g className="flame"><path d="M-9 0C-14 -10 -4 -15 -2 -26C5 -17 11 -10 9 0Z" fill="var(--g-flame)" /></g>
+        <g className="flame" style={{ animationDelay: "-.7s" } as Css}><path d="M-4 0C-6 -6 -1 -10 0 -17C3 -10 6 -5 4 0Z" fill="var(--g-flame2)" /></g>
+      </g>
+      <path d={ring} fill="var(--g-stone)" /><path d={ring} fill="none" stroke="var(--g-shadow)" strokeWidth=".8" opacity=".3" />
+    </g>
+  );
+}
+function Table() {
+  return (
+    <g>
+      <Shadow rx={56} ry={8} />
+      <path d="M-34 -38L-28 -2M34 -38L28 -2M-26 -38L-14 -2M26 -38L14 -2" stroke="var(--g-wood2)" strokeWidth="3.4" strokeLinecap="round" />
+      <path d="M-50 -40L50 -40L46 -33L-46 -33Z" fill="var(--g-wood-hi)" />
+      <path d="M-46 -33L46 -33L46 -30L-46 -30Z" fill="var(--g-wood2)" />
+      <path d={rect(-44, -20, 88, 4)} fill="var(--g-wood)" /><path d={rect(-44, -16, 88, 2)} fill="var(--g-shadow)" opacity=".3" />
+      <path d={rect(-34, -16, 4, 15) + rect(30, -16, 4, 15)} fill="var(--g-wood2)" />
+    </g>
+  );
+}
+function Lantern() {
+  return (
+    <g>
+      <Shadow rx={12} ry={3} />
+      <path d={rect(-2, -76, 4, 76)} fill="var(--g-metal)" />
+      <circle cy="-84" r="19" fill="var(--g-glow)" opacity=".36" className="glow2" />
+      <path d="M-9 -76L9 -76L7 -94L-7 -94Z" fill="var(--g-metal)" /><path d="M-5.5 -79L5.5 -79L4.5 -91L-4.5 -91Z" fill="var(--g-flame2)" />
+      <path d="M-11 -94L0 -103L11 -94Z" fill="var(--g-metal)" />
+    </g>
+  );
+}
+function Planter({ seed }: { seed: number }) {
+  const r = rng(seed);
+  const stems: ReactNode[] = [];
+  for (let i = 0; i < 6; i++) {
+    const x = -16 + i * 6.4 + between(r, -1.5, 1.5), h = between(r, 16, 32), lean = between(r, -4, 4);
+    stems.push(
+      <g key={i} transform={`translate(${f1(x)} -16)`}><g className="w" style={wind(r, 3, between(r, 6, 9), 0)}>
+        <path d={`M0 0Q${lean * 0.5} ${-h / 2} ${lean} ${-h}`} stroke="var(--g-stem)" strokeWidth="1.5" fill="none" />
+        <path d={leaf(0, -h * 0.4, -50, 9, 3) + leaf(0, -h * 0.3, 50, 9, 3)} fill="var(--g-l2)" />
+        <circle cx={lean} cy={-h} r={between(r, 3, 4.2)} fill={i % 2 ? "var(--g-peach)" : "var(--g-ivory)"} /><circle cx={lean} cy={-h} r="1.3" fill="var(--g-center)" />
+      </g></g>,
     );
   }
-  return <g>{fronds}</g>;
+  return (
+    <g>
+      <Shadow rx={28} ry={4} />
+      {stems}
+      <path d="M-22 -16L22 -16L19 0L-19 0Z" fill="var(--g-wood)" /><path d={rect(-24, -19, 48, 4)} fill="var(--g-wood-hi)" />
+      <path d="M-8 -14L-7 0M8 -14L7 0" stroke="var(--g-wood2)" strokeWidth="1" />
+    </g>
+  );
 }
-
-/* ───────────── placement ───────────── */
-const PLANT_SLOTS: Pt[] = [
-  [800, 536], [500, 540], [850, 582], [400, 500], [940, 504], [330, 588], [716, 452], [1030, 564], [556, 472], [230, 522],
-  [1100, 504], [150, 592], [410, 616], [880, 452], [1040, 458], [240, 468], [810, 612], [990, 612], [96, 522], [680, 600],
-];
-function plantSlot(i: number): Pt {
-  if (i < PLANT_SLOTS.length) return PLANT_SLOTS[i];
-  const r = rng(i * 131 + 7);
-  for (let k = 0; k < 12; k++) {
-    const x = 70 + r() * 1060, y = 450 + r() * 165;
-    if (!onPath(x, y, 1.25) && !(Math.abs(x - 360) < 90 && y < 500)) return [x, y];
+function Pond() {
+  const r = rng(11);
+  let rim = "";
+  for (let i = 0; i < 22; i++) { const t = (i / 22) * Math.PI * 2; rim += blob(Math.cos(t) * 78, -6 + Math.sin(t) * 18.5, between(r, 6, 10), between(r, 3.4, 5), r, 7, 0.12); }
+  return (
+    <g>
+      <ellipse cy="-5" rx="84" ry="22" fill="var(--g-shadow)" opacity=".16" />
+      <ellipse cy="-6" rx="76" ry="17" fill="var(--g-water)" />
+      <ellipse cx="-14" cy="-9" rx="48" ry="8" fill="var(--g-water-hi)" opacity=".45" />
+      <g transform="translate(24 -6)"><ellipse className="ripple" rx="22" ry="5" fill="none" stroke="var(--g-ivory)" strokeWidth="1.2" /></g>
+      <g transform="translate(-30 -2)"><ellipse className="ripple" style={{ animationDelay: "-3s" } as Css} rx="22" ry="5" fill="none" stroke="var(--g-ivory)" strokeWidth="1.2" /></g>
+      <ellipse cx="-34" cy="-6" rx="11" ry="3.4" fill="var(--g-l1)" /><ellipse cx="12" cy="-10" rx="9" ry="2.8" fill="var(--g-l2)" /><ellipse cx="40" cy="-4" rx="8" ry="2.6" fill="var(--g-l1)" />
+      <circle cx="-31" cy="-8" r="2.6" fill="var(--g-peach)" /><circle cx="14" cy="-12" r="2.2" fill="var(--g-ivory)" />
+      <path d={rim} fill="var(--g-stone)" /><path d={rim} fill="none" stroke="var(--g-shadow)" strokeWidth=".8" opacity=".25" />
+    </g>
+  );
+}
+function Creeper({ growth, seed, x }: { growth: number; seed: number; x: number }) {
+  if (growth <= 0) return <Seed />;
+  const r = rng(seed);
+  const pt = (t: number): Pt => {
+    if (t < 0.4) return [-24, (-96 * t) / 0.4];
+    if (t < 0.6) { const u = (t - 0.4) / 0.2; return [(1 - u) ** 2 * -24 + u * u * 24, (1 - u) ** 2 * -96 + 2 * u * (1 - u) * -132 + u * u * -96]; }
+    return [24, -96 * (1 - (t - 0.6) / 0.4)];
+  };
+  const tmax = growth >= 2 ? 1 : 0.38;
+  let vine = `M${pt(0).join(" ")}`, la = "", lb = "", bl = "";
+  for (let t = 0.02; t <= tmax; t += 0.02) {
+    const [px, py] = pt(t);
+    vine += `L${f1(px + between(r, -2, 2))} ${f1(py)}`;
+    for (let k = 0; k < 2; k++) { const d = leaf(px, py, between(r, 0, 360), between(r, 8, 14), between(r, 3, 5.4), between(r, -1.5, 1.5)); if (r() > 0.45) la += d; else lb += d; }
+    if (growth >= 2 && r() > 0.82) bl += dot(px + between(r, -5, 5), py + between(r, -4, 4), between(r, 2, 3));
   }
-  return [90 + r() * 200, 600];
+  return (
+    <g>
+      <Shadow rx={34} ry={5} />
+      <path d={rect(-27, -98, 5, 98) + rect(22, -98, 5, 98)} fill="var(--g-wood)" />
+      <path d="M-27 -97Q0 -138 27 -97L27 -93Q0 -132 -27 -93Z" fill="var(--g-wood)" />
+      <path d="M-24 -62H24M-24 -30H24M-24 -80L24 -44M24 -80L-24 -44" stroke="var(--g-wood2)" strokeWidth="1" opacity=".7" fill="none" />
+      <g className="w" style={wind(r, 1.1, 10, x)}>
+        <path d={vine} stroke="var(--g-stem)" strokeWidth="1.6" fill="none" strokeLinejoin="round" />
+        <path d={la} fill="var(--g-l1)" /><path d={lb} fill="var(--g-l2)" />
+        <path d={bl} fill="var(--g-peach)" />
+      </g>
+    </g>
+  );
 }
-const TREE_SLOTS: [number, number, number][] = [[905, 440, 0.62], [1065, 456, 0.72], [150, 444, 0.62], [782, 424, 0.46], [522, 426, 0.44], [1140, 432, 0.5]];
-const FERN_SLOTS: Pt[] = [[196, 566], [1086, 606], [66, 474], [990, 548], [470, 600], [1160, 540]];
+function ShrubItem({ growth, seed, x }: { growth: number; seed: number; x: number }) {
+  if (growth <= 0) return <Seed />;
+  const r = rng(seed);
+  const o: TreeOpts = { ox: x, maxD: 0, kids: [], tipRad: 0, grow: false };
+  const spots: Pt[] = growth >= 2 ? [[-26, -20], [0, -32], [26, -19], [-9, -14], [14, -12]] : [[-6, -10], [8, -8]];
+  const rad = growth >= 2 ? 24 : 11;
+  return <g><Shadow rx={growth >= 2 ? 52 : 22} />{spots.map(([cx, cy], i) => cluster(r, cx, cy, rad * between(r, 0.85, 1.1), o, `s${i}`))}</g>;
+}
+function TreeItem({ growth, seed, x, fresh }: { growth: number; seed: number; x: number; fresh: boolean }) {
+  if (growth <= 0) return <Seed />;
+  if (growth === 1) {
+    const r = rng(seed);
+    const o: TreeOpts = { ox: x, maxD: 0, kids: [], tipRad: 0, grow: false };
+    return (
+      <g>
+        <Shadow rx={20} ry={4} />
+        <g className="w" style={wind(r, 2.4, 8, x)}>
+          <path d="M0 0Q4 -22 -1 -48" stroke="var(--g-trunk)" strokeWidth="3.4" strokeLinecap="round" fill="none" />
+          {cluster(r, -1, -50, 14, o, "a")}{cluster(r, 8, -34, 10, o, "b")}{cluster(r, -9, -30, 9, o, "c")}
+        </g>
+      </g>
+    );
+  }
+  return <g transform={`scale(${growth === 2 ? 0.52 : 0.95})`}><Tree seed={300 + seed} ox={x} grow={fresh} /></g>;
+}
+function ItemArt({ kind, growth, seed, x, fresh = false }: { kind: YardKind; growth: number; seed: number; x: number; fresh?: boolean }) {
+  switch (kind) {
+    case "flower": return <Plant stage={growth + 1} idx={seed} x={x} />;
+    case "shrub": return <ShrubItem growth={growth} seed={seed} x={x} />;
+    case "creeper": return <Creeper growth={growth} seed={seed} x={x} />;
+    case "tree": return <TreeItem growth={growth} seed={seed} x={x} fresh={fresh} />;
+    case "bench": return <Bench />;
+    case "lantern": return <Lantern />;
+    case "planter": return <Planter seed={seed} />;
+    case "table": return <Table />;
+    case "firepit": return <FirePit />;
+    case "bbq": return <Bbq />;
+    case "pond": return <Pond />;
+    case "gazebo": return <Gazebo />;
+  }
+}
+/** Small, still preview used by the shop. */
+export function ItemPreview({ kind }: { kind: YardKind }) {
+  const max = DEF[kind].max;
+  const big = kind === "gazebo" || kind === "tree" || kind === "creeper" || kind === "lantern";
+  return (
+    <svg viewBox={big ? "-96 -160 192 168" : "-70 -110 140 118"} data-still className="garden-svg h-16 w-full" aria-hidden="true" style={{ background: "transparent" }}>
+      <ItemArt kind={kind} growth={max} seed={7} x={0} />
+    </svg>
+  );
+}
 
-/* ───────────── static scene ───────────── */
+const HIT: Record<YardKind, [number, number, number]> = {
+  flower: [20, 60, -50], shrub: [50, 30, -26], creeper: [32, 62, -66], tree: [60, 100, -100], bench: [44, 22, -22], lantern: [20, 54, -54],
+  planter: [28, 24, -22], table: [54, 26, -26], firepit: [38, 22, -22], bbq: [32, 32, -32], pond: [84, 22, -8], gazebo: [84, 70, -70],
+};
+const hashId = (id: string) => { let h = 0; for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0; return h % 100000; };
+
+/** Free spot far from other items, used by "place it for me" and keyboard users. */
+export function freeSpot(items: { x: number; y: number }[]): { x: number; y: number } {
+  const r = rng(items.length * 97 + 3);
+  let best = { x: 600, y: 540 }, bestD = -1;
+  for (let k = 0; k < 40; k++) {
+    const x = LAWN.x0 + r() * (LAWN.x1 - LAWN.x0), y = LAWN.y0 + r() * (LAWN.y1 - LAWN.y0);
+    const d = Math.min(1e9, ...items.map((i) => Math.hypot(i.x - x, (i.y - y) * 1.6)));
+    if (d > bestD) { bestD = d; best = { x, y }; }
+  }
+  return best;
+}
+
+/* ───────────── static backdrop ───────────── */
 function buildScene(uid: string) {
   const r = rng(20240611);
-  const far = ridge(338, 14, 6, 0.6, 1.3), midH = ridge(386, 12, 5, 2.1, 0.4), near = ridge(420, 6, 3, 1.4, 2.2);
-  const ps = pathShapes();
+  const far = ridge(338, 14, 6, 0.6, 1.3), midH = ridge(386, 12, 5, 2.1, 0.4), near = ridge(410, 5, 3, 1.4, 2.2);
 
   const farTrees: ReactNode[] = [], midTrees: ReactNode[] = [];
   for (let i = 0; i < 26; i++) { const x = (i + r() * 0.8) * 47; farTrees.push(silTree(r, x, far(x) + 4, between(r, 26, 50), "var(--g-far-t)", `ft${i}`)); }
   for (let i = 0; i < 14; i++) { const x = 20 + (i + r() * 0.7) * 86; midTrees.push(silTree(r, x, midH(x) + 6, between(r, 52, 84), "var(--g-mid-t)", `mt${i}`)); }
 
-  let ticks = "", pebbles = "", wild = "", wildB = "";
-  for (let i = 0; i < 300; i++) {
-    const x = r() * 1200, y = 424 + r() * 216;
-    if (onPath(x, y, 0.9)) continue;
-    const s = depthScale(y);
+  // timber fence along the back, with hedge peeking over at the corners
+  const FB = 446;
+  let pick = "", shade = "";
+  for (let x = -12; x < 1212; x += 21) {
+    const h = 54 + r() * 4, tilt = between(r, -0.8, 0.8);
+    pick += `M${f1(x)} ${FB}l${f1(tilt)} ${-h + 6}l7 -6l7 6l${f1(-tilt)} ${h - 6}Z`;
+    shade += rect(x + 10, FB - h + 6, 4, h - 6);
+  }
+  const hedge: ReactNode[] = [];
+  const ho: TreeOpts = { ox: 0, maxD: 0, kids: [], tipRad: 0, grow: false };
+  [[40, 404, 34], [128, 410, 28], [1060, 408, 30], [1150, 402, 36]].forEach(([x, y, rr], i) => hedge.push(<g key={`h${i}`} transform={`translate(${x} ${y})`}>{cluster(r, 0, 0, rr, { ...ho, ox: x }, "h")}</g>));
+
+  let ticks = "", wild = "", wildB = "";
+  for (let i = 0; i < 260; i++) {
+    const x = r() * 1200, y = 452 + r() * 190, s = depthScale(y);
     ticks += `M${f1(x)} ${f1(y)}l${f1(between(r, -2, 2) * s)} ${f1(-between(r, 3, 7) * s)}`;
   }
-  for (let i = 0; i < 120; i++) {
-    const x = r() * 1200, y = 430 + r() * 210;
-    if (onPath(x, y, 1.05)) continue;
-    const s = depthScale(y), rr = between(r, 1.1, 2.3) * s;
+  for (let i = 0; i < 90; i++) {
+    const x = r() * 1200, y = 456 + r() * 184, s = depthScale(y), rr = between(r, 1.1, 2.3) * s;
     if (i % 3) wild += dot(x, y, rr); else wildB += dot(x, y, rr * 0.9);
   }
-  // stepping stones and edge stones along the path
-  let stoneBody = "", stoneHi = "", stoneSh = "";
-  for (let i = 0; i < 26; i++) {
-    const y = 424 + i * 8.9 + r() * 5, side = i % 2 ? 1 : -1;
-    const x = pathCenter(y) + side * (pathHalf(y) + between(r, -3, 9)), s = depthScale(y);
-    const w = between(r, 5, 11) * s, h = w * between(r, 0.5, 0.7);
-    stoneSh += blob(x + 1, y + h * 0.5, w * 1.05, h * 0.5, r, 7, 0.1);
-    stoneBody += blob(x, y, w, h, r, 8, 0.14);
-    stoneHi += blob(x + w * 0.18, y - h * 0.3, w * 0.55, h * 0.4, r, 7, 0.12);
-  }
+  let stripes = "";
+  for (let i = 0; i < 6; i++) { const y0 = FB + i * 36, y1 = y0 + 18; stripes += `M-10 ${y0}H1210V${y1}H-10Z`; }
 
   const tufts: { y: number; el: ReactNode }[] = [];
-  for (let i = 0; i < 40; i++) {
-    const x = r() * 1200, y = 440 + r() * 190;
-    if (onPath(x, y, 1.05)) continue;
-    const s = depthScale(y);
-    tufts.push({ y, el: <g key={`tf${i}`} transform={`translate(${f1(x)} ${f1(y)}) scale(${f1(s)})`}><Grass r={r} x={0} y={0} wx={x} h={between(r, 20, 36)} blades={5} a={2.6} T={5.8} tones={["var(--g-gr0)", "var(--g-gr1)", "var(--g-gr2)"]} k="g" /></g> });
+  for (let i = 0; i < 30; i++) {
+    const x = r() * 1200, y = 456 + r() * 180, s = depthScale(y);
+    tufts.push({ y, el: <g key={`tf${i}`} transform={`translate(${f1(x)} ${f1(y)}) scale(${f1(s)})`}><Grass r={r} x={0} y={0} wx={x} h={between(r, 20, 34)} blades={5} a={2.6} T={5.8} tones={["var(--g-gr0)", "var(--g-gr1)", "var(--g-gr2)"]} k="g" /></g> });
   }
   tufts.sort((a, b) => a.y - b.y);
 
   const clumps: ReactNode[] = [];
   for (let i = 0; i < 28; i++) {
-    const x = -20 + i * 46 + r() * 30, y = between(r, 606, 662), h = between(r, 52, 118) * (y > 640 ? 1.15 : 0.95);
-    if (Math.abs(x - pathCenter(y)) < pathHalf(y) * 0.55) continue;
+    const x = -20 + i * 46 + r() * 30, y = between(r, 612, 664), h = between(r, 50, 112) * (y > 645 ? 1.15 : 0.95);
     clumps.push(<Grass key={`cl${i}`} r={r} x={x} y={y} h={h} blades={4} a={4} T={5.4} tones={["var(--g-gr0)", "var(--g-gr1)", "var(--g-gr2)"]} k={`c${i}`} />);
   }
 
@@ -484,21 +660,17 @@ function buildScene(uid: string) {
       <rect y="330" width="1200" height="110" fill={`url(#${uid}haze)`} />
       {midTrees}
       <path d={ridgePath(near)} fill="var(--g-mid2)" />
-      <path d={ridgePath((x) => near(x) + 10)} fill={`url(#${uid}mead)`} />
-      <path d={ps.body} fill="var(--g-path)" />
-      <path d={ps.core} fill="var(--g-path-hi)" opacity=".55" />
-      <path d={ps.edgeL + ps.edgeR} stroke="var(--g-path-edge)" strokeWidth="1.6" fill="none" opacity=".5" />
+      {hedge}
+      <path d={rect(-12, FB - 40, 1224, 5) + rect(-12, FB - 16, 1224, 5)} fill="var(--g-fence-sh)" />
+      <path d={pick} fill="var(--g-fence)" />
+      <path d={shade} fill="var(--g-fence-sh)" opacity=".55" />
+      <path d={rect(-12, FB - 40, 1224, 5)} fill="var(--g-fence)" opacity=".5" />
+      <rect y={FB - 2} width="1200" height="260" fill={`url(#${uid}mead)`} />
+      <path d={stripes} fill="var(--g-stripe)" />
+      <rect y={FB - 2} width="1200" height="12" fill="var(--g-shadow)" opacity=".2" />
       <path d={ticks} stroke="var(--g-gr0)" strokeWidth="1.1" strokeLinecap="round" fill="none" opacity=".55" />
       <path d={wild} fill="var(--g-ivory)" opacity=".85" />
       <path d={wildB} fill="var(--g-peach)" opacity=".8" />
-      <path d={stoneSh} fill="var(--g-shadow)" opacity=".25" />
-      <path d={stoneBody} fill="var(--g-stone)" />
-      <path d={stoneHi} fill="var(--g-stone-hi)" opacity=".75" />
-      {shrub(r, 468, 470, 0.9, "sh1")}
-      {shrub(r, 262, 504, 0.8, "sh2")}
-      {shrub(r, 742, 456, 0.7, "sh3")}
-      {shrub(r, 1010, 474, 0.85, "sh4")}
-      <g transform="translate(360 486)"><Tree seed={77} ox={360} anchor /></g>
       {tufts.map((t) => t.el)}
     </>
   );
@@ -514,21 +686,20 @@ function buildScene(uid: string) {
 }
 
 /* ───────────── component ───────────── */
-const SEEN = "asap2:garden-seen";
-type Item = { key: string; kind: "plant" | "tree" | "fern"; idx: number; stage: number; x: number; y: number; s: number };
+const SEEN = "asap2:yard-seen";
+export type YardEdit = { placing: YardKind | null; selectedId: string | null; moving: boolean; onPoint: (x: number, y: number) => void; onSelect: (id: string | null) => void };
 
-/** Cumulative progress as a living landscape. No numbers, no pressure. */
-export function GardenArt({ garden, full = false }: { garden: G; full?: boolean }) {
-  void full;
+/** The backyard. Pass `edit` on the garden page to place, select and move things. */
+export function GardenArt({ garden, edit }: { garden: G; edit?: YardEdit }) {
   const { state } = useApp();
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
   const scene = useMemo(() => buildScene(uid), [uid]);
   const ref = useRef<SVGSVGElement>(null);
+  const ghost = useRef<SVGGElement>(null);
   const [active, setActive] = useState(true);
   const [ready, setReady] = useState(false);
   const [fresh, setFresh] = useState<Record<string, number>>({});
 
-  // Pause the breeze while the picture is off screen.
   useEffect(() => {
     const el = ref.current;
     if (!el || typeof IntersectionObserver === "undefined") return;
@@ -537,14 +708,12 @@ export function GardenArt({ garden, full = false }: { garden: G; full?: boolean 
     return () => io.disconnect();
   }, []);
 
-  // New growth since the garden was last shown plays once, then is remembered.
+  // New growth since the yard was last shown plays once, then is remembered.
   const hydrated = state.hydrated;
   useEffect(() => {
     if (!hydrated) return;
     const cur: Record<string, number> = {};
-    garden.order.forEach((id) => { cur[`p${id}`] = garden.plants[id]; });
-    garden.trees.forEach((id) => { cur[`t${id}`] = 3; });
-    for (let i = 0; i < garden.ferns; i++) cur[`f${i}`] = 3;
+    garden.yard.forEach((it) => { cur[it.id] = it.growth + 1; });
     let saved: Record<string, number> | null = null;
     try { saved = (JSON.parse(localStorage.getItem(SEEN) || "null") as { k: Record<string, number> } | null)?.k ?? null; } catch {}
     if (saved) {
@@ -554,47 +723,69 @@ export function GardenArt({ garden, full = false }: { garden: G; full?: boolean 
     }
     try { localStorage.setItem(SEEN, JSON.stringify({ k: cur })); } catch {}
     setReady(true);
-  }, [hydrated, garden]);
+  }, [hydrated, garden.yard]);
 
-  const items = useMemo<Item[]>(() => {
-    if (!ready) return [];
-    const out: Item[] = [];
-    const start = Math.max(0, garden.order.length - 120);
-    garden.order.forEach((id, idx) => {
-      if (idx < start) return;
-      const [x, y] = plantSlot(idx);
-      out.push({ key: `p${id}`, kind: "plant", idx, stage: garden.plants[id], x, y, s: depthScale(y) });
-    });
-    garden.trees.forEach((id, i) => { const [x, y, s] = TREE_SLOTS[i % TREE_SLOTS.length]; out.push({ key: `t${id}`, kind: "tree", idx: i, stage: 3, x: x + Math.floor(i / TREE_SLOTS.length) * 28, y, s }); });
-    for (let i = 0; i < Math.min(garden.ferns, FERN_SLOTS.length); i++) { const [x, y] = FERN_SLOTS[i]; out.push({ key: `f${i}`, kind: "fern", idx: i, stage: 3, x, y, s: depthScale(y) * 0.9 }); }
-    return out.sort((a, b) => a.y - b.y);
-  }, [garden, ready]);
+  const items = useMemo(() => (ready ? [...garden.yard].sort((a, b) => a.y - b.y) : []), [garden.yard, ready]);
+  const sel = edit?.selectedId ? garden.yard.find((i) => i.id === edit.selectedId) : undefined;
 
-  const empty = garden.order.length === 0 && garden.trees.length === 0;
+  const toWorld = (e: { clientX: number; clientY: number }) => {
+    const svg = ref.current!, p = svg.createSVGPoint();
+    p.x = e.clientX; p.y = e.clientY;
+    const w = p.matrixTransform(svg.getScreenCTM()!.inverse());
+    return { x: Math.min(LAWN.x1, Math.max(LAWN.x0, w.x)), y: Math.min(LAWN.y1, Math.max(LAWN.y0, w.y)) };
+  };
+  const armed = !!edit && (!!edit.placing || edit.moving);
+  const onClick = (e: React.MouseEvent) => {
+    if (!edit) return;
+    if (armed) { const w = toWorld(e); edit.onPoint(w.x, w.y); } else edit.onSelect(null);
+  };
+  const onMove = (e: React.PointerEvent) => {
+    if (!armed || !ghost.current || e.pointerType === "touch") return;
+    const w = toWorld(e);
+    ghost.current.setAttribute("transform", `translate(${f1(w.x)} ${f1(w.y)}) scale(${f1(depthScale(w.y))})`);
+    ghost.current.style.display = "";
+  };
+
+  const empty = garden.yard.length === 0;
   return (
-    <svg ref={ref} viewBox="0 0 1200 640" preserveAspectRatio="xMidYMax slice" role="img" data-active={active} className="garden-svg h-full w-full"
-      aria-label={empty ? "An illustrated meadow with a winding path, ready for the first seed." : "An illustrated meadow that keeps growing as you make progress."}>
+    <svg ref={ref} viewBox="0 0 1200 640" preserveAspectRatio="xMidYMax slice" role={edit ? "group" : "img"} data-active={active}
+      className="garden-svg h-full w-full" style={edit && armed ? { cursor: "crosshair" } : undefined}
+      onClick={edit ? onClick : undefined} onPointerMove={edit ? onMove : undefined}
+      onPointerLeave={() => { if (ghost.current) ghost.current.style.display = "none"; }}
+      aria-label={empty ? "A quiet backyard with a fence and an empty lawn, ready for your first plant." : "Your backyard, growing as you complete tasks."}>
       {scene.back}
       {items.map((it) => {
-        const prev = fresh[it.key];
+        const prev = fresh[it.id];
         const isFresh = prev !== undefined;
+        const s = depthScale(it.y), living = isLiving(it.kind), seed = hashId(it.id);
+        const selected = sel?.id === it.id;
         const gs = { "--gx": prev >= 2 ? 0.9 : 0.7, "--gy": prev >= 2 ? 0.55 : prev === 1 ? 0.12 : 0.02 } as Css;
+        const [hx, hy, hc] = HIT[it.kind];
         return (
-          <g key={it.key} transform={`translate(${f1(it.x)} ${f1(it.y)}) scale(${f1(it.s)})`}>
-            <g className={isFresh ? (it.kind === "tree" ? "grow-tree" : "grow") : undefined} style={isFresh ? gs : undefined}>
-              {it.kind === "tree" ? <Tree seed={300 + it.idx * 37} ox={it.x} grow={isFresh} /> : it.kind === "fern" ? <Fern idx={it.idx} x={it.x} /> : <Plant stage={it.stage} idx={it.idx} x={it.x} />}
+          <g key={it.id} transform={`translate(${f1(it.x)} ${f1(it.y)}) scale(${f1(s)})`}
+            onClick={edit && !armed ? (e) => { e.stopPropagation(); edit.onSelect(it.id); } : undefined}
+            onKeyDown={edit && !armed ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); edit.onSelect(it.id); } } : undefined}
+            tabIndex={edit && !armed ? 0 : undefined} role={edit ? "button" : undefined}
+            aria-label={edit ? `${DEF[it.kind].label}${living ? `, ${stageWord(it).toLowerCase()}` : ""}. Press Enter to select.` : undefined}
+            style={edit && !armed ? { cursor: "pointer", outline: "none" } : undefined}>
+            {selected && <ellipse cy="3" rx={Math.max(34, hx * 0.8)} ry="10" fill="var(--g-peach)" fillOpacity=".22" stroke="var(--g-ivory)" strokeWidth="2" strokeDasharray="5 4" />}
+            <g className={isFresh ? (living ? "grow" : "place") : undefined} style={isFresh && living ? gs : undefined}>
+              <ItemArt kind={it.kind} growth={it.growth} seed={seed} x={it.x} fresh={isFresh} />
             </g>
+            {edit && <ellipse cx="0" cy={hc} rx={hx} ry={hy} fill="transparent" />}
           </g>
         );
       })}
+      {edit?.placing && <g ref={ghost} style={{ display: "none", pointerEvents: "none" }} opacity=".65"><ItemArt kind={edit.placing} growth={DEF[edit.placing].max} seed={3} x={600} /></g>}
+      {edit?.moving && sel && <g ref={ghost} style={{ display: "none", pointerEvents: "none" }} opacity=".65"><ItemArt kind={sel.kind} growth={sel.growth} seed={hashId(sel.id)} x={600} /></g>}
       {scene.front}
     </svg>
   );
 }
 
 export function gardenCaption(g: G): string {
-  if (!g.order.length && !g.trees.length) return "Your garden begins with your first seed.";
-  if (g.trees.length) return "A tree has taken root. Your garden is growing.";
-  if (Object.values(g.plants).includes(3)) return "Something has bloomed. Your garden is growing.";
-  return "New growth is on its way.";
+  const n = wallet(g);
+  if (n > 0) return `${n} seed${n === 1 ? "" : "s"} ready for your backyard.`;
+  if (!g.yard.length) return "Your backyard is waiting. Finish a task to earn your first seeds.";
+  return "Your backyard is growing.";
 }

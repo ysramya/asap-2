@@ -1,4 +1,4 @@
-import type { DumpItem, Step, Task } from "@/types";
+import type { DumpItem, Priority, Step, Task } from "@/types";
 
 /**
  * Local, rule-based planner. This is NOT an LLM. It exists so the product
@@ -132,11 +132,35 @@ export function stepsFor(title: string, kind: "breakdown" | "assist" = "breakdow
   return src.map((s) => ({ id: uid(), text: s.text, minutes: s.minutes, done: false }));
 }
 
-/** Picks up to three priorities: explicit high priority and due dates first, then shorter tasks. */
+export const PRIORITIES: Priority[] = ["high", "medium", "low"];
+export const PRIORITY_LABEL: Record<Priority, string> = { high: "High", medium: "Medium", low: "Low" };
+const PR: Record<Priority, number> = { high: 0, medium: 1, low: 2 };
+
+const iso = (d: Date) => d.toISOString().slice(0, 10);
+/** A suggestion only. The user always has the last word on a task's priority. */
+export function suggestPriority(title: string, due?: string, now = new Date()): { level: Priority; reason: string } {
+  const t = title.toLowerCase();
+  if (due) {
+    const days = Math.round((new Date(due + "T12:00:00").getTime() - new Date(iso(now) + "T12:00:00").getTime()) / 86400000);
+    if (days <= 1) return { level: "high", reason: days < 0 ? "it is overdue" : "it is due very soon" };
+    if (days <= 6 && !/someday|maybe/.test(t)) return { level: "medium", reason: "it is due this week" };
+  }
+  if (/urgent|asap|deadline|interview|submit|invoice|tax|exam|today|pay\b/.test(t)) return { level: "high", reason: "it sounds time-sensitive" };
+  if (/someday|maybe|organi[sz]e|tidy|browse|explore|idea|clean|read\b/.test(t)) return { level: "low", reason: "it sounds flexible" };
+  return { level: "medium", reason: "there is no deadline" };
+}
+
+/** AI order: priority first, then nearest deadline, then shorter tasks. */
+export function aiOrder(tasks: Task[]): Task[] {
+  return [...tasks].sort((a, b) => PR[a.priority] - PR[b.priority] || (a.due ?? "9999").localeCompare(b.due ?? "9999") || a.minutes - b.minutes);
+}
+/** Today's plan in the order the user set; anything unranked falls back to AI order. */
+export function planOrder(tasks: Task[]): Task[] {
+  return aiOrder(tasks.filter((t) => t.today)).sort((a, b) => (a.rank ?? 1e9) - (b.rank ?? 1e9));
+}
+/** Suggests which open tasks belong in today, up to `limit`, already in order. */
 export function pickToday(tasks: Task[], limit = 3): Task[] {
-  const open = tasks.filter((t) => !t.done && !t.inbox);
-  const score = (t: Task) => (t.priority === "high" ? 0 : 2) + (t.due ? 0 : 1) + (t.today ? -3 : 0);
-  return [...open].sort((a, b) => score(a) - score(b) || a.minutes - b.minutes).slice(0, limit);
+  return aiOrder(tasks.filter((t) => !t.done && !t.inbox)).slice(0, limit);
 }
 
 export const DEFAULT_PROJECTS = ["Inbox", "Career", "Personal", "School", "Work"];

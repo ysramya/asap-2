@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useApp } from "@/lib/store";
-import { Button, Checkbox, Meta, PriorityMark, ProjectLabel, cx } from "@/components/ui";
+import { Button, Checkbox, Meta, PriorityMark, PrioritySelect, ProjectLabel, cx } from "@/components/ui";
 import { Icon } from "@/components/ui/Icon";
 import { dueLabel, projectsOf, stepsFor, taskStatus } from "@/lib/planner";
 import { AI_NOTE } from "@/lib/ai";
@@ -36,7 +36,7 @@ export function TaskRow({ task, index, expandable = false }: { task: Task; index
             {task.due && <Meta><span className={dueLabel(task.due) === "Overdue" ? "font-semibold text-ink" : ""}>{dueLabel(task.due)}</span></Meta>}
             <Meta>{status}</Meta>
             {task.steps.length > 0 && <Meta>{doneSteps}/{task.steps.length} steps</Meta>}
-            <PriorityMark high={task.priority === "high"} />
+            <PriorityMark level={task.priority} />
           </div>
         </div>
         {expandable && (
@@ -91,9 +91,7 @@ export function TaskRow({ task, index, expandable = false }: { task: Task; index
           <div className="flex flex-wrap items-center gap-2">
             {!draft && <Button size="sm" variant="ai" onClick={() => setDraft(stepsFor(task.title))}><Icon name="spark" size={16} />{task.steps.length ? "Re-suggest steps" : "Break it down"}</Button>}
             <Button size="sm" onClick={() => dispatch({ type: "update", id: task.id, patch: { today: !task.today } })} aria-pressed={task.today}>{task.today ? "In today's plan" : "Add to today"}</Button>
-            <Button size="sm" onClick={() => dispatch({ type: "update", id: task.id, patch: { priority: task.priority === "high" ? "normal" : "high" } })} aria-pressed={task.priority === "high"}>
-              {task.priority === "high" ? "Remove priority" : "Mark priority"}
-            </Button>
+            <PrioritySelect compact value={task.priority} onChange={(p) => dispatch({ type: "update", id: task.id, patch: { priority: p } })} />
             <label className="flex items-center gap-2 text-sm text-muted">Due
               <input type="date" value={task.due ?? ""} onChange={(e) => dispatch({ type: "update", id: task.id, patch: { due: e.target.value || undefined } })}
                 className="h-9 rounded-[8px] border border-line bg-surface px-2 text-ink" />
